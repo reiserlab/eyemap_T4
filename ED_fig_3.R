@@ -1,4 +1,4 @@
-
+# see Fig_2_EM.R for ED Fig.3D, ED Fig.3E, 
 
 # ED Fig.3A, SO histogram ------------------------------------------------------------
 
@@ -11,11 +11,11 @@ h <- diff(cos(theta)) %>% abs()
 A <- 2*pi*1*h
 h_norm <- round(h / min(h), 2)
 
-
 # - histo wrt PD
-LL <- 3
-ssn <- dplyr::bind_rows(seg_summ_type[[LL]])
+## ## choose type
+LL <- 1
 
+ssn <- dplyr::bind_rows(seg_summ_type[[LL]])
 df <- matrix(ncol = 3, nrow = 0)
 for (ii_h in 1:4) {
   if (nrow(ssn[ssn$so == ii_h,]) > 0 ) {
@@ -44,7 +44,6 @@ ggplot(df, aes(x=ang, y=freq)) +
 
 com_xyz_eye_b <- lens_type[[2]][, c('comx','comy','comz')] %>% as.matrix()
 com_xyz_eye_d <- lens_type[[4]][, c('comx','comy','comz')] %>% as.matrix()
-
 
 fnnb <- 19
 # - T4b
@@ -91,7 +90,6 @@ for (k in 1:length(inddiv)) {
 }
 # dev.off()
 
-
 # -- avg vector
 v1 <- matrix(ncol = 2, nrow = 0)
 for (j in 1:length(inddiv)) {
@@ -113,7 +111,6 @@ for (j in 1:9) {
   segments(0,0, v1[j,1], v1[j,2], col=pal_9[j])
 }
 # dev.off()
-
 
 # -- hist
 dev.new()

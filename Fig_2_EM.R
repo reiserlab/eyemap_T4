@@ -106,7 +106,7 @@ rgl.viewpoint(fov=0,zoom=1, userMatrix= rotationMatrix(-90/180*pi,1,0,0) %*%
 # rgl.snapshot(filename = paste("Mi1_eg.png", sep = ''))
 
 
-# Fig.2C, Mi1 med col with annotation (and T4b) -------------------------------------------------------------
+# Fig.2C, Mi1 med col with annotation ---------------------------------
 
 LL <- 2
 vcom <- as.matrix(dir_type[[LL]][, c("comx","comy","comz")])
@@ -228,7 +228,7 @@ nb_coord <- rbind(c(0,0),
                   c(0, -5/180*pi),
                   c(0, +5/180*pi) )
 
-# choose type 
+## ## choose type 
 LL <- 2
 # and one of these 4 examples in Fig.2G
 j <- 139
@@ -244,7 +244,6 @@ v0 <- dir_type[[LL]][ ,c('rsx0','rsy0','rsz0')] %>% as.matrix()
 v1 <- dir_type[[LL]][ ,c('rsxd','rsyd','rszd')] %>% as.matrix()
 v3 <- dir_type[[LL]][ ,c('odx0','ody0','odz0')] %>% as.matrix()
 v4 <- dir_type[[LL]][ ,c('odxd','odyd','odzd')] %>% as.matrix()
-
 
 ii <- sweep(ucl_rot_sm, 2, com_xyz_eye[j, ] )^2 %>% rowSums() %>% which.min()
 ii2 <- c(nb_ind[nb_ind[ii,],]) %>% unique()
@@ -328,7 +327,6 @@ for (k in 1:max(subtree_so$points)) {
 }
 arrows(PD_pc[2,1], PD_pc[2,2], PD_pc[3,1], PD_pc[3,2], lwd= 3,)
 arrows(OD_pc[1,1], OD_pc[1,2], OD_pc[2,1], OD_pc[2,2], lwd= 3, code = 3, angle = 90, length = 0.2)
-
 # dev.off()
 
 # PLOT, vec for each seg
@@ -374,16 +372,15 @@ refhex_2 <- rbind(c(0,0),
                   c(-2,-2),
                   c(-2,0) )
 
-
 dev.new()
 plot(refhex_2, asp=1)
 text(refhex_2, labels = seq(1,nrow(refhex_2)), adj = 2)
-
 
 # rescaling factor, med -> refhex
 rs <- mean(nb_dist_med, na.rm =T) / mean(sqrt(rowSums(refhex_1[-1,]^2)))
 rs <- 1
 
+## ## choose type
 LL <- 2 
 
 com_xyz <- dir_type[[LL]][, c('comx','comy','comz')] %>% as.matrix()
@@ -470,7 +467,7 @@ df_arrow <- as.data.frame(rbind(cbind(PD_hex_b[ii,1:2], PD_com_b[ii,]),
                                   cbind(PD_com_b[ii,], PD_hex_b[ii,3:4])) )
 colnames(df_arrow) <- c('x','y','xend','yend')
 
-# -- plot
+# PLOT
 windows(width = 7, height = 10)
 plt <- ggplot() +
   geom_segment(data = df_arrow, aes(x = x,y = y, xend = xend,yend = yend), colour='gray',size =0.2) +
@@ -612,7 +609,7 @@ PDOD_T4d <- cbind(sqrt(rowSums((PD_hex[,1:2] - PD_hex[,3:4])^2)), sqrt(rowSums((
 PD_ang_T4d <- atan2(PD_hex[,4] - PD_hex[,2], PD_hex[,3] - PD_hex[,1]) /pi*180
 PD_ang_T4d <- 90 - PD_ang_T4d
 
-# scatter plot
+# -- scatter plot
 df <- rbind(cbind(PDOD_T4b, 2), cbind(PDOD_T4d, 4) )
 df <- as.data.frame(df)
 colnames(df) <- c('PD','OD','gp')
@@ -631,23 +628,8 @@ plt <- ggplot(df) +
   coord_fixed(ratio=1)
 windows(width = 8, height = 8)
 # pdf("OD_PD_hex.pdf",width = 8, height = 8)
-# pdf("OD_PD_hex_sepa_norm.pdf",width = 8, height = 8)
-# plt
-# ggMarginal(plt, margins = "y", size = 2, type = "boxplot", outlier.size =3, groupColour = TRUE, groupFill = TRUE)
 ggMarginal(plt, margins = "both", size = 4, type = "density", groupColour = TRUE, groupFill = F, lwd=2)
 # dev.off()
-
-# # -- ang hist
-# windows(width = 8, height = 4)
-# # pdf(paste("PD_ang_hex.pdf", sep = ""), width = 8, height = 4)
-# hh <- hist(PD_ang_T4b, breaks = seq(-45, 45, by=5)+90, plot = F)
-# plot(hh$mids, hh$density, type='l', bty='n', col=pal_T4[2], lwd=3, xlim = c(-45, 45+90), xaxt='n',yaxt='n',
-#      xlab ="", ylab='',main = '')
-# hh <- hist(PD_ang_T4d, breaks = seq(-45, 45, by=5), plot = F)
-# points(hh$mids, hh$density, type='l', bty='n',col=pal_T4[4], lwd=3)
-# axis(1, at = seq(-45, 45+90, by =45), labels = paste(seq(-45, 45+90, by =45), "°", sep = ''), cex.axis = 1.5 )
-# axis(2, at = c(0, 1/5/length(hh$mids) ), labels = c('0', '1/n'), cex.axis = 1.5 )
-# # dev.off()
 
 # -- ang density
 windows(width = 8, height = 4)
@@ -661,7 +643,6 @@ points(dd$x, dd$y, type='l', bty='n',col=pal_T4[4], lwd=3)
 axis(1, at = seq(-45+90, 45+180, by =45), labels = paste(seq(-45+90, 45+180, by =45), "°", sep = ''), cex.axis = 1.5 )
 axis(2, at = c(0, 1/512/diff(dd$x[1:2]) ), labels = c('0', '1'), cex.axis = 1.5 )
 # dev.off()
-
 
 sum(PD_ang_T4d > 180)
 sum(PD_ang_T4b < 90)
@@ -682,7 +663,6 @@ axis(2, at = c(0, 1/512/diff(dd$x[1:2]) ), labels = c('0', '1'), cex.axis = 1.5 
 
 wilcox.test(PDOD_T4b[,1], PDOD_T4d[,1])
 t.test(PDOD_T4b[,1], PDOD_T4d[,1])
-
 
 
 # Fig.2M, ED Fig.3D, OD vs PD, scatter + hist, normalized by column edge distance --------------------
@@ -770,33 +750,4 @@ ggplot() +
 
 t.test(PDOD_T4b[,1], PDOD_T4d[,1])
 t.test(PDOD_T4b[,2], PDOD_T4d[,2])
-
-
-# # spatial profile, T4b and T4d in med, use T4 gallery, Fig.2  ---------------------------
-# 
-# PDOD_T4b <- PDOD_T4(LL=2)
-# PDOD_T4d <- PDOD_T4(LL=4)
-# 
-# df <- rbind(cbind(PDOD_T4b[,5:6], 2),
-#             cbind(PDOD_T4d[,5:6], 4) )
-# df <- as.data.frame(df)
-# colnames(df) <- c('PD','OD','gp')
-# df$gp <- factor(df$gp)
-# 
-# 
-# plt <- ggplot(df) +
-#   geom_point(aes(x = PD, y = OD, colour = gp), size = 3, alpha=0.8) +
-#   scale_color_manual(values= pal_T4[c(2,4)],labels = c("T4b", "T4d"), guide= guide_legend(title="dist[norm]"), na.value="gray") +
-#   ylab("OD") + xlab("PD") +
-#   theme_minimal() +
-#   scale_x_continuous(limits = c(1, 3.5), breaks = c(1,2,3), labels = c(1,2,3), expand = c(0, 0)) +
-#   scale_y_continuous(limits = c(1, 3.5), breaks = c(1,2,3), labels = c(1,2,3), expand = c(0, 0)) + # set +y as above eq
-#   labs(title = paste("OD vs PD_med", "_norm_unit", sep = "")) +
-#   coord_fixed(ratio=1)
-# windows(width = 8, height = 8)
-# # pdf("OD_PD.pdf",width = 8, height = 10)
-# # plt
-# # ggMarginal(plt, margins = "y", size = 2, type = "boxplot", outlier.size =3, groupColour = TRUE, groupFill = TRUE)
-# ggMarginal(plt, margins = "both", size = 4, type = "density", groupColour = TRUE, groupFill = F, lwd=2)
-# # dev.off()
 

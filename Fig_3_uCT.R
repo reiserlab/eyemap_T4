@@ -1,6 +1,6 @@
 # re-run Figure_0 after this script
 
-# set up Moll
+# set up Mollweide projection
 ucl_rot_tp <- cart2sphZ(ucl_rot_2eye)[,2:3] %>%
   as_tibble() %>%
   mutate(theta = theta/pi*180, phi = phi/pi*180) %>%
@@ -44,12 +44,12 @@ plt
 
 # Fig.3F, inter-ommatidia angle --------------------------
 
-ioa_hex <- cbind(ucl_rot_Mo_right, rowMeans(nb_dist_ucl_right[,2:7], na.rm = T)/pi*180) # 2023
+ioa_hex <- cbind(ucl_rot_Mo_right, rowMeans(nb_dist_ucl_right[,2:7], na.rm = T)/pi*180)
 ioa_hex <- as.data.frame(ioa_hex)
 colnames(ioa_hex) <- c('xM','yM','ioa')
 ioa_hex_right <- ioa_hex
 
-ioa_hex <- cbind(ucl_rot_Mo_left, rowMeans(nb_dist_ucl_left[,2:7], na.rm = T)/pi*180) # 2023
+ioa_hex <- cbind(ucl_rot_Mo_left, rowMeans(nb_dist_ucl_left[,2:7], na.rm = T)/pi*180) 
 ioa_hex <- as.data.frame(ioa_hex)
 colnames(ioa_hex) <- c('xM','yM','ioa')
 ioa_hex_left <- ioa_hex
@@ -130,7 +130,6 @@ plt
 # dev.off()
 
 
-
 # Fig.3E, just 3d ucl ------------------------------------------------------------
 
 nopen3d()
@@ -145,7 +144,6 @@ arrow3d(c(1,0,0), c(1.6, 0, 0), theta = pi / 18, n = 8, col = "gray30", type = "
 arrow3d(c(0,0,1), c(0, 0, 1.5), theta = pi / 12, n = 8, col = "gray30", type = "rotation")
 arrow3d(c(0,-1,0), c(0, -1.8, 0), theta = pi / 18, n = 8, col = "gray30", type = "rotation")
 rgl.viewpoint(fov=0,zoom=0.8, userMatrix= rotationMatrix(-60/180*pi,1,0,0) %*% rotationMatrix(-35/180*pi,0,0,1))
-
 # rgl.snapshot("ucl_rot.png")
 
 # Fig.3H, ioa_h, ioa_v, in Mollweide ---------------------------------------------------
@@ -170,10 +168,28 @@ for (j in 1:nrow(ucl_rot_sm)) {
 # - Mollweide
 df_pos <- data.frame(ucl_rot_Mo)
 
-## ##
+# -- ioa_h
 df_pos$quan<- ioa_h
 bin_lim <- c(7, 12) #5-95%
-## ##
+
+df <- df_pos[, c('xM','yM','quan')]
+df$quan[is.na(df$quan)] <- 20
+colnames(df) <- c('x','y','z')
+grid <- with(df, interp::interp(x, y, z))
+
+plt <- plt_Mo34 + 
+  geom_path(data = cmer, aes(x=xM, y=yM), colour = pal_axes[3], lwd=1.1) +
+  geom_point(data=df_pos, aes(x = xM, y = yM, colour = quan), size = 2) +
+  scale_color_gradient(low = "blue", high= "gray85", limits=bin_lim, oob=scales::squish, trans='log',
+                       breaks=bin_lim, labels=bin_lim, guide = guide_colorbar(title = "angle"), na.value = 'yellow') +
+  theme(legend.position = c(.9, .9) ) +
+  labs(title = "ioa eye along h-axis")
+windows(width = 12, height = 8)
+# pdf("ioa_h.pdf", width = 8.5, height = 4.5)
+plt
+# dev.off()
+
+# -- ioa_v
 df_pos$quan<- ioa_v
 bin_lim <- c(3, 6)
 
@@ -189,15 +205,12 @@ plt <- plt_Mo34 +
                        breaks=bin_lim, labels=bin_lim, guide = guide_colorbar(title = "angle"), na.value = 'yellow') +
   theme(legend.position = c(.9, .9) ) +
   labs(title = "ioa eye along h-axis")
-
 windows(width = 12, height = 8)
-# pdf("ioa_h.pdf", width = 8.5, height = 4.5)
 # pdf("ioa_v.pdf", width = 8.5, height = 4.5)
 plt
 # dev.off()
 
-
-# ED Fig.4F, ED Fig.4G, ioa and skewness   -------------------
+# ED Fig.4F, ED Fig.4G, ioa and shear   -------------------
 
 fn <- c(
   '20240701',
@@ -251,7 +264,6 @@ for (f in 1:length(fn)) {
     colnames(ucl_rot_Mo) <- c('xM','yM')
     rownames(ucl_rot_Mo) <- rownames(ucl_rot)
     
-    
     # - use ind_nb to determine nb and ioa, assume  Euclidean dist ~ arclength
     nb_dist_ucl <- matrix(nrow = nrow(ucl_rot), ncol = 7)
     for (j in 1:nrow(ucl_rot)) {
@@ -261,7 +273,6 @@ for (f in 1:length(fn)) {
     ioa_hex <- cbind(ucl_rot_Mo, rowMeans(nb_dist_ucl[,2:7], na.rm = T)/pi*180)
     ioa_hex <- as.data.frame(ioa_hex)
     colnames(ioa_hex) <- c('xM','yM','ioa')
-    
     
     # - loessm ioa
     # -- grid
@@ -289,7 +300,6 @@ for (f in 1:length(fn)) {
     
     # -- plot
     breaks_contour <- c(0, 4, 5, 6)
-    
     df <- as.data.frame(ioa_hex)
     plt <- plt_Mo +
       geom_contour(data=df_pred, aes(x=xM,y=yM, z=Z), breaks=breaks_contour,
@@ -302,13 +312,11 @@ for (f in 1:length(fn)) {
     print(plt)
     # dev.off()
     
-    
-    # - skewness
+    # - shear
     nb_ang_ucl <- matrix(ncol = 2, nrow = nrow(ucl_rot))
     hex_hvf_eye <- matrix(ncol = 3, nrow = nrow(ucl_rot))
     for (j in 1:nrow(ind_nb)) {
       if (sum(complete.cases(ind_nb[j,])) == 7) {
-        # eye
         bt <- ucl_rot[ind_nb[j,3], ] - ucl_rot[ind_nb[j,6], ]
         bf <- colMeans(ucl_rot[ind_nb[j,4:5],]) - colMeans(ucl_rot[ind_nb[j,c(2,7)],])
         hex_hvf_eye[ind_nb[j,1],] <- bf
@@ -316,11 +324,9 @@ for (f in 1:length(fn)) {
         nb_ang_ucl[ind_nb[j,1],] <- c(j, ang)
       }
     }
-    
     df_pos <- data.frame(ucl_rot_Mo)
     df_pos$quan <- nb_ang_ucl[,2]
     quantile(na.omit(df_pos$quan), c(0, 0.01, 0.1, 0.5, 0.9, 0.99, 1))
-    
     
     # -- Mollweide
     rg <- c(60, 90, 120)
@@ -328,16 +334,13 @@ for (f in 1:length(fn)) {
       # geom_path(data = cmer, aes(x=xM, y=yM), colour = pal_axes[3], lwd=1) +
       geom_point(data=df_pos, aes(x = xM, y = yM, colour = quan), size = 2) +
       scale_color_gradientn(colours = pal_heat1, values = scales::rescale(rg), limits=range(rg), oob=scales::squish,
-                            breaks= rg, labels= rg, guide = guide_colorbar(title = "skewness") ) +
-      # geom_text(data=df_pos, aes(xM, yM, label=round(quan,1)), size=3, nudge_x = 0.03) +
-      # geom_text(data=df_pos, aes(xM, yM, label= seq(1,nrow(df_pos))), size=3, nudge_y = 0.02) +
+                            breaks= rg, labels= rg, guide = guide_colorbar(title = "shear") ) +
       theme(legend.position = c(.9, .9) ) +
       labs(title = "skew angle")
     windows(width = 9, height = 6)
     # pdf(paste0("skew_eye_", fn[f], "_", c('left','right')[lr], ".pdf"), width = 8.5, height = 4.5)
     print(plt)
     # dev.off()
-    
   }
 }
 
@@ -363,7 +366,6 @@ ucl_rot_right <- ucl_rot[order(i_match),][!ind_left_lens,]
 rownames(ucl_rot_right) <- seq(1, nrow(ucl_rot_right))
 colnames(ucl_rot_right) <- c('x','y','z')
 
-
 for (lr in c(1,2)) {
   if (lr == 1) {
     pt <- lens_left
@@ -378,8 +380,6 @@ for (lr in c(1,2)) {
     ucl_rot <- ucl_rot_right
     hexcoord <- reghex(pt, lefteye = F)
   }
-  
-  # hexcoord <- reghex(pt)
   ind_nb <- hexcoord[[1]]
   ind_xy <- hexcoord[[2]]
   
@@ -396,7 +396,6 @@ for (lr in c(1,2)) {
   ucl_rot_Mo <- Mollweide(ucl_rot_Mo[,c('t', 'p')])
   colnames(ucl_rot_Mo) <- c('xM','yM')
   rownames(ucl_rot_Mo) <- rownames(ucl_rot)
-  
   
   # - use ind_nb to determine nb and ioa, assume  Euclidean dist ~ arclength
   nb_dist_ucl <- matrix(nrow = nrow(ucl_rot), ncol = 7)

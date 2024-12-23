@@ -3,21 +3,15 @@
 library(natverse)
 library(tidyverse)
 library(igraph)
-# library(rjson)
 library(RColorBrewer)
 library(sf) #intersection
 library(deldir)
-# library(gridExtra) #save ggplot to pdf
 library(np) 
 
-
-# clean everythign up.
+# clean everything up.
 rm(list=ls())
 
 source("eyemap_func.R")
-
-pal_so <- c('gray', brewer.pal(5,"RdBu")[c(2,1,5,4)])
-pal_T4 <- c("turquoise", "#A6611A",  "royalblue", "plum")
 
 # load data ---------------------------------------------------------------
 
@@ -41,7 +35,6 @@ load("data/neu_T4_dend.RData")
 # }
 # # SAVE
 # save(T4_dend, anno_T4_dend, file = "data/neu_T4_dend.RData")
-
 
 # T4 analysis -------------------------------------------------------------
 grid_x <- seq(-4e4, 4e4, by = 1e2)
@@ -150,19 +143,13 @@ for (LL in 1:4) {
     
     # re-scale dir
     pv <- sweep(xyzmatrix(subtree$d),2, dend_com[j,],'-') %*% T4_dir[j,]
-    # nq <- quantile(pv, c(0.01,0.99)) %>% diff()
-    # T4_dir_rs[j,] <- c(dend_com[j,]- T4_dir[j,]*nq/2, dend_com[j,]+ T4_dir[j,]*nq/2)
-    nq <- quantile(pv, c(0.01, 0.99)) # 2021-11-11
+    nq <- quantile(pv, c(0.01, 0.99)) 
     T4_dir_rs[j,] <- c(dend_com[j,] + T4_dir[j,]*nq[1], dend_com[j,]+ T4_dir[j,]*nq[2])
     
     # - dir on lens
-    # ## ## use nearest
-    # nbhd_N <- 1+8+16 # num of nbs
-    # nb_ii <- sweep(med_xyz, 2, dend_com[j,], '-')^2 %>% rowSums() %>% order() %>% head(nbhd_N)
-    ## ## use nb_ind
+    # use nb_ind
     ii <- sweep(med_xyz, 2, dend_com[j,], '-')^2 %>% rowSums() %>% which.min()
     nb_ii <- c(nb_ind[nb_ind[ii,], ]) %>% unique()%>% na.omit() %>% c()
-    # nb_ii <- c(nb_ind[nb_ind[match(ii,nb_ind[,1]),], ]) %>% unique()%>% na.omit() %>% c() #2023
     
     # +v-axis
     vaxis <- med_xyz[nb_ind[nb_ii[1], c(6,3)], ] %>% diff() 
@@ -212,8 +199,6 @@ for (LL in 1:4) {
     }
     T4_com_lens[j,] <- xyz_com / sqrt(sum(xyz_com^2))
     T4_dir_lens[j,] <- c(xyz_vtail, xyz_vhead) / sqrt(sum(xyz_com^2))  #normalize to com, 2022-02-07
-    
-    
     
     # - angle betw seg and T4_dir
     for (ii_seg in 1:length(subtree$SegList)) {
@@ -374,7 +359,6 @@ for (k in 1:3) {
 }
 RF_lens_T4b_pred <- 2*(vf_pred - ucl_rot_sm) + ucl_rot_sm # restore length
 
-
 # use nb_ind to smooth
 vv <- RF_lens_T4b_pred - ucl_rot_sm
 vvnew <- vv
@@ -386,18 +370,6 @@ for (m in 1:nrow(nb_ind)) {
 RF_lens_T4b_pred_sm <- ucl_rot_sm + vvnew
 RF_lens_T4b_pred_sm <- sweep(RF_lens_T4b_pred_sm,1,sqrt(rowSums(RF_lens_T4b_pred_sm^2)),'/') #normalize
 
-# PLOT
-vf_pred <- RF_lens_T4b_pred_sm
-nopen3d()
-points3d(ucl_rot_aux[1:Npt,], col = "grey", size = 5)
-for (j in 1:nrow(RF_lens)) {
-  arrow3d(RF_lens[j,1:3], RF_lens[j,4:6], theta = pi / 12, n = 4, col = "red", type = "rotation")
-}
-for (j in 1:Npt) {
-  arrow3d(ucl_rot_aux[j,], vf_pred[j,1:3], theta = pi / 12, n = 4, col = "blue", type = "rotation")
-}
-
-
 # npreg vector field on lens, T4d ------------------------
 
 LL <- 4
@@ -406,7 +378,6 @@ RF_lens <- lens_type[[LL]][, c('x0','y0','z0','xd','yd','zd')] %>% as.matrix()
 colnames(RF_lens) <- NULL
 RF_com <- lens_type[[LL]][, c('comx','comy','comz')] %>% as.matrix()
 colnames(RF_com) <- NULL
-
 
 # - np
 np_eval <- ucl_rot_sm
@@ -422,7 +393,6 @@ for (k in 1:3) {
 }
 RF_lens_T4d_pred <- 2*(vf_pred - ucl_rot_sm) + ucl_rot_sm # restore length (approx)
 
-
 # - smooth, use nb_ind
 vv <- RF_lens_T4d_pred - ucl_rot_sm
 vvnew <- vv
@@ -434,21 +404,7 @@ for (m in 1:nrow(nb_ind)) {
 RF_lens_T4d_pred_sm <- ucl_rot_sm + vvnew
 RF_lens_T4d_pred_sm <- sweep(RF_lens_T4d_pred_sm,1,sqrt(rowSums(RF_lens_T4d_pred_sm^2)),'/') #normalize
 
-
-# PLOT
-vf_pred <- RF_lens_T4d_pred
-nopen3d()
-points3d(ucl_rot_aux[1:Npt,], col = "grey", size = 5)
-for (j in 1:nrow(RF_lens)) {
-  arrow3d(RF_lens[j,1:3], RF_lens[j,4:6], theta = pi / 12, n = 4, col = "red", type = "rotation")
-}
-for (j in 1:Npt) {
-  # for (j in Npt:nrow(vf_pred)) {
-  arrow3d(ucl_rot_aux[j,], vf_pred[j,1:3], theta = pi / 12, n = 4, col = "blue", type = "rotation")
-}
-
-
-# all T4 direction assuming antiparallelism  ------------------------------------------------------
+# all T4 direction assuming antiparallelism  -----------------------------------
 
 # This is RF or preferred direction (PD), opposite of predicated orientation of T4 dendrites
 RF_lens_T4_pred <- cbind(RF_lens_T4b_pred,
@@ -461,7 +417,7 @@ RF_lens_T4_pred_sm <- cbind(RF_lens_T4b_pred_sm,
                          RF_lens_T4d_pred_sm,
                          ucl_rot_sm*2 - RF_lens_T4d_pred_sm )
 
-# SAVE
-save(RF_lens_T4_pred, RF_lens_T4_pred_sm, file = "data/T4_RF_pred.RData")
+# # SAVE
+# save(RF_lens_T4_pred, RF_lens_T4_pred_sm, file = "data/T4_RF_pred.RData")
 
 

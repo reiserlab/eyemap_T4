@@ -200,7 +200,6 @@ lens_ixy <- ind_xy
 ind_xy[,1] <- match(ind_xy[,1], eyemap[,2])
 ind_xy <- ind_xy[!is.na(ind_xy[,1]), ]
 
-# Note 2023-11-01
 ord <- order(nb_ind[,1])
 nb_ind <- nb_ind[ord,] 
 ind_xy <- ind_xy[ord,]
@@ -382,31 +381,6 @@ eyemap_aux <- rbind(eyemap, cbind(seq(nrow(eyemap)+1, nrow(eyemap)+nrow(pt_aux))
 #      ucl_rot_aux, med_xyz_aux, eyemap_aux, Npt,
 #      file = "data/eyemap.RData")
 
-# overlapping T4 subtypes to confirm local orthogonality ------------------------
-
-library(stringr)
-
-anno_overlap_M <- catmaid_query_by_annotation("^T4 overlap M$")
-anno_overlap_LD <- catmaid_query_by_annotation("^T4 overlap LD$") #misnomer 
-anno_overlap_LV <- catmaid_query_by_annotation("^T4 overlap LV$") #misnomer 
-anno_overlap_VP <- catmaid_query_by_annotation("^T4 overlap VP$")
-anno_overlap <- rbind(anno_overlap_M, anno_overlap_LD, anno_overlap_LV, anno_overlap_VP)
-T4_overlap_pos <- c('M','AD','AV','LV')
-
-ii <- regexpr("T4", anno_overlap$name) #start index
-anno_overlap$ti <- match(substring(anno_overlap$name, ii+2, ii+2), letters)
-
-T4_overlap <-  read.neurons.catmaid(anno_overlap[,"skid"], .progress='text')
-T4_overlap <- kinkCT1(T4_overlap)# correct kink CT1
-
-T4_overlap_N <- c(nrow(anno_overlap_M), nrow(anno_overlap_LD), nrow(anno_overlap_LV), nrow(anno_overlap_VP) )
-
-# SAVE
-# save(anno_overlap, T4_overlap_pos, T4_overlap_N, T4_overlap, file = "data/T4_hs.RData")
-
-
-
-
 # ME to LOP ------------------------------------------------------------------
 
 # eyemap
@@ -517,8 +491,3 @@ for (k in 1:3) {
 # # SAVE
 # save(TmY5a, anno_TmY5a, file = "data/neu_TmY5a.RData")
 # save(lo_pred, tag_xyz, file = "data/me_lo.RData")
-
-
-
-
-

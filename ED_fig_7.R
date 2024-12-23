@@ -1,3 +1,5 @@
+# see Fig_4.R for ED Fig.7A, ED Fig.7B, ED Fig.7E, ED Fig.7F
+
 
 # ED Fig.7D, size, T4d on eye --------------------------------------------------
 
@@ -13,7 +15,6 @@ for (j in 1:nrow(v0)) {
   PD_eye[j,] <- angcos(v1[j,], v0[j,])
 } 
 
-
 # -- size with interp
 np_eval <- ucl_rot_sm
 np_pred <- matrix(nrow = nrow(np_eval), ncol = 1)
@@ -27,7 +28,6 @@ for (j in 1:nrow(np_eval)) {
   np_pred[j] <- predict(model_np, newdata = np_eval_one)
 }
 
-
 # - size from 3d
 vv <- (RF_lens_T4_pred_sm[,(3*(LL-1)+1):(3*(LL-1)+3)] - ucl_rot_sm)
 size_3d <- sqrt(rowSums(vv^2))
@@ -35,7 +35,6 @@ size_3d <- sqrt(rowSums(vv^2))
 # - plot
 df_pos <- data.frame(ucl_rot_Mo)
 df_pos$val <- np_pred
-# df_pos$val <- size_3d /pi*180
 
 range((df_pos$val))
 df_pos$valgp <- cut(df_pos$val,c(8, 10, 12, 15, 18)) 
@@ -49,8 +48,6 @@ plt <- ggplot() +
   geom_path(data = as.data.frame(bkgd_eq_p45), aes(x=xM, y=yM), colour = 'grey50') +
   geom_path(data = as.data.frame(bkgd_eq), aes(x=xM, y=yM), colour = 'grey50') +
   geom_path(data = cmer, aes(x=xM, y=yM), colour = pal_axes[3], lwd=1) +
-  # geom_path(data=as.data.frame(bkgd_str_equa), aes(xM, yM), colour='gray', alpha=1,linetype=1, lwd=1) +
-  # geom_path(data=as.data.frame(bkgd_str_meri), aes(xM, yM), colour='gray', alpha=1,linetype=1, lwd=1) +
   geom_point(data=df_pos, aes(x = xM, y = yM, colour = valgp), size = 2, na.rm = T) +
   scale_color_manual(values = pal_heat2,guide= guide_legend(title="ang[deg]"), na.translate=T) +
   scale_x_continuous(limits = c(- 2*sqrt(2)/2, 2*sqrt(2)), expand = c(0, 0)) +
@@ -97,8 +94,6 @@ xyz[,2] <- -xyz[,2]
 com_rtp <- cart2sphZ(xyz)
 ii <- com_rtp[,3] > (45-str_hw)/180*pi & com_rtp[,3] < (45+str_hw)/180*pi
 x <- com_rtp[ii,2]/pi*180
-# plot(x, PD_eye[ii], pch=15, xlab ="", ylab='', main = paste("T4", letters[LL], " PD along central meridian", sep = ""),
-#      ylim = c(10,25), xlim= c(10, 170), xaxt='n',yaxt='n')
 plot(x, PD_eye[ii], pch=15, xlab ="", ylab='', main = paste("T4", letters[LL], " PD along central meridian", sep = ""),
      ylim = c(5,20), xlim= c(170, 10), xaxt='n',yaxt='n')
 axis(1, at = seq(180, 0, by = -45), labels = seq(-90, 90, by = 45) )
@@ -135,7 +130,7 @@ sg <- 2
 pxy0 <- T4b_pxy_H[T4b_12_H == sg,]
 vxy0 <- T4b_vxy_H[T4b_12_H == sg,]
 
-# ## ## T4d
+## ## T4d
 # LL <- 4 
 # vv <- ucl_rot_sm + 0.5*(RF_lens_T4_pred_sm[,(3*(LL-1)+1):(3*(LL-1)+3)] - ucl_rot_sm)
 # vv_Mer <- cart2Mercator(vv)
@@ -164,10 +159,8 @@ df_arrow <- data.frame(cbind(ucl_rot_Merc, vv_Mer) )
 colnames(df_arrow) <- c('x','y','xend','yend')
 
 plt <- plt_Mer +
-  # geom_path(data = cmer_Merc, aes(x=x, y=y), colour = pal_axes[3], lwd=1) +
   geom_segment(data=df_arrow_H, aes(x = x,y = y, xend = xend,yend = yend), colour='black',size =1) +
   geom_segment(data=df_arrow, aes(x = x,y = y, xend = xend,yend = yend), colour=pal_T4[LL],size =1) +
-  # geom_segment(data=df_arrow, aes(x = x,y = y, xend = xend,yend = yend), colour=pal_T4[LL],arrow = arrow(length = unit(0.008, "npc"), type = "closed"), size =1) +
   coord_fixed(ratio = 1) +
   scale_y_continuous(limits = log(tan(pi/4 + c(-60,60)/180*pi/2)),
                      breaks = log(tan(pi/4 + seq(-60,60,by=10)/180*pi/2)),

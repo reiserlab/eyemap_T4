@@ -1,3 +1,5 @@
+# see Fig_3_pattern.R for ED Fig.5H
+
 # ED Fig.5A, ------------------------------------------------------------------
 
 # regular hex grid
@@ -54,11 +56,11 @@ plt
 
 windows(width = 4, height = 4)
 # pdf(paste("asp_comp.pdf", sep = ""), width = 4, height = 4)
-dt <- rowMeans(nb_dist_ucl[, c(2,4,5,7)]) / rowMeans(nb_dist_ucl[, c(3,6)]) #2023
+dt <- rowMeans(nb_dist_ucl[, c(2,4,5,7)]) / rowMeans(nb_dist_ucl[, c(3,6)]) 
 dd <- density(dt, from= 0.4, to= 3.1, bw='SJ', na.rm = T)
 plot(dd$x, dd$y, type='l', bty='n', col='black', lwd=3, xlim = c(0.5, 2), ylim=c(0,5), xaxt='n',yaxt='n',
      xlab ="", ylab='',main = '')
-dt <- rowMeans(nb_dist_med[, c(2,4,5,7)]) / rowMeans(nb_dist_med[, c(3,6)]) #2023
+dt <- rowMeans(nb_dist_med[, c(2,4,5,7)]) / rowMeans(nb_dist_med[, c(3,6)]) 
 dd <- density(dt, from= 0.4, to= 3.1, bw='SJ', na.rm = T)
 points(dd$x, dd$y, type='l', bty='n', col='blue', lwd=3)
 axis(1, at = seq(0.5, 2, by =0.5), labels = seq(0.5, 2, by =0.5), cex.axis = 1.5 )
@@ -72,7 +74,7 @@ axis(2, at = c(0, 1/512/diff(dd$x[1:2])*((3.1-0.4)/(2-0.5)) ), labels = c('0', '
 df_pos <- data.frame(ucl_rot_Mo)
 
 # -- eye
-rr <- rowMeans(nb_dist_ucl[, c(2,4,5,7)]) / rowMeans(nb_dist_ucl[, c(3,6)]) #2023
+rr <- rowMeans(nb_dist_ucl[, c(2,4,5,7)]) / rowMeans(nb_dist_ucl[, c(3,6)]) 
 quantile(na.omit(rr), c(0, 0.05,0.5,0.95, 1))
 scalecuts <- c(0.8, 1.6)
 df_pos$ratio <- rr
@@ -108,7 +110,7 @@ plt
 # dev.off()
 
 # -- med
-rr <- rowMeans(nb_dist_med[, c(2,4,5,7)]) / rowMeans(nb_dist_med[, c(3,6)]) #2023
+rr <- rowMeans(nb_dist_med[, c(2,4,5,7)]) / rowMeans(nb_dist_med[, c(3,6)]) 
 quantile(na.omit(rr), c(0, 0.01,0.05,0.5,0.95,0.99, 1))
 scalecuts <- c(0.8, 1.6)
 df_pos$ratio <- rr
@@ -137,8 +139,7 @@ nb_coord <- rbind(c(-5/180*pi,0),
 
 hex_eg <- list()
 for (k in 1:3) {
-  j <- match(ind_eghex[k], nb_ind[,1]) # 2023
-  # eye
+  j <- match(ind_eghex[k], nb_ind[,1])
   pt <- ucl_rot_sm[nb_ind[j,], ] 
   tp <- cart2sphZ(pt[1,,drop=F])[,2:3]
   rtp <- cbind(1, sweep(nb_coord,2,tp,'+'))
@@ -172,7 +173,9 @@ for (k in 1:3) {
 }
 
 # PLOT
+## ## choose a cell
 j <- 3
+
 pt <- hex_eg[[j]]
 windows(width = 8, height = 8)
 # pdf(file = paste("hex_eg_", c("DD","D","C")[j], ".pdf", sep=''))
@@ -183,7 +186,7 @@ a2 <- colMeans(pt[c(2,7),]) # left
 va <- pt[3,] - pt[6,] # vertical vec upwards
 title(paste(c("DD","D","C")[j],
             " asp= ", 
-            round(mean(sqrt(rowSums(sweep(pt[c(2,4,5,7),],2,pt[1,])^2))) / mean(sqrt(rowSums(sweep(pt[c(3,6),],2,pt[1,])^2))), 2), #2023
+            round(mean(sqrt(rowSums(sweep(pt[c(2,4,5,7),],2,pt[1,])^2))) / mean(sqrt(rowSums(sweep(pt[c(3,6),],2,pt[1,])^2))), 2),
             sep = '')
 )
 # dev.off()

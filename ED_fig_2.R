@@ -25,7 +25,6 @@ c(10000,0,0) %>%
   rbind(c(0,0,0), .) %>%
   sweep(2, c(3e5, 3.5e5, 2.5e5), '+') %>%
   segments3d()
-
 # rgl.snapshot(filename = paste("chiasm_vaxis.png", sep = ''))
 
 # ED Fig.2F, extension by TmY5a -------------------------------------------------------
@@ -55,7 +54,6 @@ c(10000,0,0) %>%
   rbind(c(0,0,0), .) %>%
   sweep(2, c(3e5, 2e5, 2.8e5), '+') %>%
   segments3d()
-
 # rgl.snapshot("LO_col.png")
 
 # ED Fig.2G, all T4d in med  -----------------------------------------------------------------

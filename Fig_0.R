@@ -1,23 +1,18 @@
 # Overview ---------------------------------------------------------------
 
-# This script sets the stage (library/func/data/color+plot conventions/etc) while other "Figure_*.R" scripts plot figures.
-# It loads processed data. To re-process, see:
-# eyemap_uCT.R processes uCT data
-# eyemap_lens_med_lop.R makes an eyemap
-# eyemap_T4_v2
-# eyemap_T4_RF
+# This script sets the stage (library/func/data/conventions/etc) for plotting.
+# It loads processed data. To re-process, see "proc_*"
+# "Fig_*" and "ED_fig_*" scripts carry out further analysis and produce figures.
 
-# Notes on some variables
-# Mi1_ixy=[rownames of ucl_rot_sm, x, y]
 
 # Notation and convention
 # "## ##" = need to specify a choice, say, between T4b and T4d
-# "Mollweide" and "Mercator" = different projections of the same plot
+# "Mollweide" and "Mercator" refer to different projections of the same plot
 
-# Plotting:
+# Plotting and saving
 # By default, the plot is shown in a plotting device, usually with "nopen()" or "windows()".
 # To save to disk, look for commented commands:
-# "pdf()" paired with "dev.off()", "ggsave()", or "rgl.snapshot()".
+# "ggsave()", "rgl.snapshot()", or "pdf()" paired with "dev.off()".
 
 
 # load library ------------------------------------------------------------
@@ -46,7 +41,6 @@ source("eyemap_func.R")
 # FAFB CATMAID server ------------------------------------------------------------------
 
 vfbcatmaid("fafb") # https://catmaid.virtualflybrain.org/
-
 print(catmaid_login())
 # expected output: 
 # Connection to catmaid server:
@@ -63,8 +57,6 @@ load(paste0("data/microCT/20240701", "_dia.RData"))
 
 # separate left and right, re-indexing
 lens_left <- lens[ind_left_lens,]
-# lens_mir <- lens_left
-# lens_mir[,2] <- -lens_mir[,2]
 lens_2eye <- lens
 ucl_rot_2eye <- ucl_rot_sm
 
@@ -74,7 +66,6 @@ ind_Up_lens_left <- na.omit(match(i_match[ind_Up], rownames(lens_left)))
 ind_Down_lens <- na.omit(match(i_match[ind_Down], rownames(lens)))
 ind_Down_lens_left <- na.omit(match(i_match[ind_Down], rownames(lens_left)))
 cone_lens <- i_match[!ind_left_cone]
-
 
 ucl_rot_left <- ucl_rot_2eye[order(i_match),][ind_left_lens,]
 colnames(ucl_rot_left) <- c('x','y','z')
@@ -95,10 +86,10 @@ load('data/H2_tuning_2023.rda')
 load('data/lens_ixy.RData')
 load('data/med_ixy.RData')
 
-# neighboring points' indices: "nb_ind"
-# and distance: "nb_dist_med" for medulla columns, "nb_dist_ucl" for ommatidia directions
+# nb_ind: neighboring points' indices
+# nb_dist_med: medulla neighbor column distance
+# nb_dist_ucl: ommatidia directions neighbor dist
 load('data/hexnb_ind_dist.RData') 
-
 
 # load EM data ---------------------------------------------------------
 # neurons in this study can be found here

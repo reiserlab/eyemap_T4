@@ -1,3 +1,4 @@
+
 # Fig.4A, visual -- neuronal ------------------------------------------------------
 
 LL <- 2
@@ -172,25 +173,14 @@ if (LL == 2) {
     geom_segment(data = df_arrow[ind_eg2[c(1)],], aes(x = x,y = y, xend = xend,yend = yend), colour=pal_T4[LL],size =3) +
     geom_segment(data = df_arrow[-ind_eg2[c(1)],], aes(x = x,y = y, xend = xend,yend = yend), colour=pal_T4[LL],size =1)
 } else {
-  # geom_segment(data = df_arrow, aes(x = x,y = y, xend = xend,yend = yend), colour=pal_T4[2],arrow = arrow(length = unit(0.008, "npc"), type = "closed"), size =1) +
   plt <- plt +
     geom_segment(data = df_arrow, aes(x = x,y = y, xend = xend,yend = yend), colour=pal_T4[LL],size =1)
 }
-  
-# add v-axis
-# ii_ax <- -14:14
-# for (j in ii_ax ) {
-#   ind_axis <- vaxis_gen(j)
-#   vl <- df_pos[match(ind_axis, eyemap[,2]),]
-#   vl <- vl[order(vl$yM),]
-#   plt <- plt +
-#     geom_path(data = vl, aes(x=xM, y=yM), colour = 'grey50', lwd=0.5)
-# }
 windows(width = 12, height = 8)
 # pdf(paste("T4", letters[LL], "_RF_Mollweide_real.pdf", sep = ''), width = 9.5, height = 6.5)
 plt
 # dev.off()
-# ggsave("T4d_RF_Mollweide.pdf", width = 8.5, height = 4.5)
+
 
 # Fig.4C, ED Fig.7B, Mollweide  ------------------------------------------------
 
@@ -228,10 +218,8 @@ for (j in 1:nrow(uxy)) {
       
       pxyz <- xyz
       
-      ## ## spk
-      thetaphi <- tb_v[ii,3:4] 
-      # ## ## sub-threshold
-      # thetaphi <- tb_v[ii,5:6] 
+      # spk
+      thetaphi <- tb_v[ii,3:4]
       
       thetaphi[, 1] <- 90 - thetaphi[, 1]
       thetaphi[, 2] <- 360 - thetaphi[, 2] # left to right, need it cos cart2Merc invert y
@@ -243,7 +231,6 @@ for (j in 1:nrow(uxy)) {
       dxyz <- xyz
       
       df_tmp2 <- cbind(pxyz, dxyz, j, k)
-      
       df_tmp <- c(colMeans(pxyz),
                   colMeans(dxyz), j, k)
     }
@@ -262,15 +249,12 @@ df_avg <- as.data.frame(df) %>%
   ungroup() %>%
   as.data.frame()
 
-# dark (=0) or bright (=1)
-# pxyz <- df[df[,8]== 1, 1:3] 
 pxyz <- df_avg[,c('x','y','z')] #combine
 H2p_Merc <- cart2Mercator(pxyz) #Mercator
 H2p_Mo <- cart2sph2tp(pxyz) # mollweide
 H2p_Mo <- Mollweide(H2p_Mo[,c('t', 'p')])
 colnames(H2p_Mo) <- c('xM','yM')
 
-# dxyz <- df[df[,8]== 1, 4:6]
 dxyz <- df_avg[, c('xend','yend','zend')]
 H2d_Merc <- cart2Mercator(dxyz)
 H2d_Mo <- cart2sph2tp(dxyz) 
@@ -290,7 +274,6 @@ colnames(df_arrow) <- c('x','y','xend','yend')
 
 plt <- plt_Momin +
   geom_path(data = cmer, aes(x=xM, y=yM), colour = pal_axes[3], lwd=1) +
-  # geom_segment(data = df_arrow, aes(x = x,y = y, xend = xend,yend = yend), colour=pal_T4[LL],arrow = arrow(length = unit(0.008, "npc"), type = "closed"), size =1) +
   geom_segment(data = df_arrow, aes(x = x,y = y, xend = xend,yend = yend), colour=pal_T4[LL],size =1) +
   annotate("text", x = df_H2$x+0.02, y = df_H2$y+0.02, label = 1:nrow(df_H2), size = 3) +
   geom_segment(data = df_H2, aes(x = x,y = y, xend = xend,yend = yend), colour='red',arrow = arrow(length = unit(0.02, "npc"), type = "closed"), size =1)
@@ -299,11 +282,10 @@ windows(width = 12, height = 8)
 # pdf(paste0("T4", letters[LL], "_RF_H2_edge_Moll.pdf"), width = 9.5, height = 6.5)
 plt
 # dev.off()
-# ggsave("T4d_RF_Mollweide.pdf", width = 8.5, height = 4.5)
-
 
 # cont. ED Fig.6A, Mercator projection ---------------------------------------------
 
+## ## choose type
 LL = 2
 vv <- ucl_rot_sm + 0.5*(RF_lens_T4_pred_sm[,(3*(LL-1)+1):(3*(LL-1)+3)] - ucl_rot_sm)
 
@@ -315,15 +297,9 @@ df_H2 <- df_H2[!is.na(df_H2[,1]),]
 colnames(df_H2) <- c('x','y','xend','yend')
 df_H2 <- as.data.frame(df_H2)
 
-# # add a v-axis
-# ind_axis <- vaxis_gen(5)
-# xy <- data.frame(ucl_rot_sm)[match(ind_axis, eyemap[,2]),]
-# ax_Mer <- cart2Mercator(xy)
-
 # PLOT
 df_arrow <- data.frame(cbind(ucl_rot_Merc, vv_Mer) )
 colnames(df_arrow) <- c('x','y','xend','yend')
-
 
 plt <- plt_Mer +
   geom_path(data = cmer_Merc, aes(x=x, y=y), colour = pal_axes[3], lwd=1) +
@@ -336,7 +312,7 @@ plt
 # ggsave(paste("T4", letters[LL], "_RF_Mercator_PD.pdf",sep=''), width = 5, height = 6.5)
 
 
-# cont. Fig.4C, summary of comparison and explanation of bias -----------------------------------------------------------------
+# cont. Fig.4C, summary  -----------------------------------------------------------------
 
 kk <- c()
 ang <- matrix(ncol = 2, nrow = 6)
@@ -352,37 +328,13 @@ for (j in seq(1,6)) {
 }
 ang <- ang[c(2,3,5,6,4,1), ]
 
-
-# --- plot both angs
-df <- data.frame(
-  rbind(
-    cbind(ang[,1]/pi*180, 1), cbind(ang[,2]/pi*180,2)
-  )
-)
-colnames(df) <- c('ang','type')
-df$ang <- df$ang + 180
-
-windows(width = 6, height = 3)
-# pdf(paste("H2_vs_T4b", '.pdf', sep = ''), width = 6, height = 3)
-ggplot(df ) + 
-  geom_point(aes(x=c(seq(1,6),seq(1,6)), y=ang, colour= factor(type)), size = 1) +
-  scale_discrete_manual(values = c('red', pal_T4[2]),aesthetics = "colour",guide= guide_legend(title="")) +
-  coord_cartesian(ylim = c(0, 40)) +
-  scale_y_continuous(breaks= seq(0,40,by=10), labels = paste0(seq(0,40,by=10), "°")) +
-  scale_x_continuous(breaks= seq(0,6,by=1), labels = seq(0,6,by=1)) +
-  theme_minimal() +
-  labs(title= paste("H2 vs T4b", sep = ''),
-       x='position', y='') 
-# dev.off()
-
-# -- indivisual 
+# individual angles
 pxyz <- df_indi[,c('x','y','z')] 
 H2p_Merc_indi <- cart2Mercator(pxyz) #Mercator
 dxyz <- df_indi[, c('xend','yend','zend')]
 H2d_Merc_indi <- cart2Mercator(dxyz)
 
 df_H2_indi <- cbind(H2p_Merc_indi, H2d_Merc_indi, df_indi[,'pos']) %>% as.data.frame()
-# df_H2_indi <- df_H2_indi[!is.na(df_H2_indi[,1]),]
 colnames(df_H2_indi) <- c('x','y','xend','yend','pos')
 df_H2_indi <- as.data.frame(df_H2_indi)
 
@@ -394,7 +346,7 @@ for (j in 1:nrow(ang_indi)) {
   )
 }
 
-# --- plot both angs
+# plot both angs
 df <- cbind(ang_indi, 1)
 df <- as.data.frame(df)
 colnames(df) <- c('ang','pos','type')
@@ -416,8 +368,6 @@ df3 <- df %>%
             sd = sd(ang),
             n = n(),
             se = sd / sqrt(n)
-            # lower = mean(ang)-se(ang),
-            # higher = mean(ang)+se(ang)
             ) %>%
   ungroup() %>%
   data.frame()
@@ -433,9 +383,7 @@ windows(width = 6, height = 3)
 ggplot( ) + 
   geom_point(data=df3, aes(x=x, y=mean), colour='red', size = 1) +
   geom_errorbar(data=df3, aes(x=x, ymin=mean-se, ymax=mean+se),colour='red', width=.2) +
-  # geom_errorbar(data=df3, aes(x=x, ymin=lower, ymax=higher), width=.2) +
   geom_point(data=df2, aes(x=pos, y=ang), colour= pal_T4[2], size = 1) +
-  # scale_discrete_manual(values = c('red', pal_T4[2]),aesthetics = "colour",guide= guide_legend(title="")) +
   coord_cartesian(ylim = c(-5, 35)) +
   scale_y_continuous(breaks= seq(0,40,by=10), labels = paste0(seq(0,40,by=10), "°")) +
   scale_x_continuous(breaks= seq(0,6,by=1), labels = seq(0,6,by=1)) +
@@ -493,36 +441,8 @@ for (j in 1:nrow(eyemap)) {
 } 
 ang_T4b_vaxis_eye <- ang_T4_vaxis_eye
 
-
 range(ang_T4_vaxis_eye, na.rm = T)
 quantile(na.omit(ang_T4b_vaxis_eye), c(0.05,0.1, 0.25, 0.5, 0.75, 0.9, 0.95))
-
-
-# - hist
-
-# -- eye, combine with hex hist -- cf Figure_3_lattice.R, 
-dev.new()
-# pdf("hist T4b and v-axis on eye.pdf")
-hh <- hist(ang_T4_vaxis_eye, breaks = seq(30, 150, by=5), plot = F) #2023
-plot(hh$mids, hh$counts, type='l', bty='n', col=pal_T4[2], xlim = c(60, 120), xaxt='n',yaxt='n', xlab ="", ylab="", main = "T4b and v-axis on eye")
-
-nb_ang_ucl <- matrix(ncol = 2, nrow = nrow(eyemap))
-for (j in 1:nrow(nb_ind)) {
-  if (sum(complete.cases(nb_ind[j,])) == 7) {
-    # eye
-    # 2023
-    bt <- ucl_rot_sm[nb_ind[j,3], ] - ucl_rot_sm[nb_ind[j,6], ]
-    bf <- colMeans(ucl_rot_sm[nb_ind[j,c(4,5)],]) - colMeans(ucl_rot_sm[nb_ind[j,c(2,7)],])
-    ang <- acos(bt %*% bf / sqrt(sum(bt^2)) / sqrt(sum(bf^2)) ) /pi*180 
-    nb_ang_ucl[j,] <- c(j, ang)
-  }
-}
-hh <- hist(nb_ang_ucl[,2], breaks = seq(30, 150, by=5), plot = F)
-points(hh$mids, hh$counts, type='l', bty='n', xlim = c(30, 150), xaxt='n',yaxt='n', xlab ="angle [deg]", ylab='counts')
-
-axis(1, at = seq(30, 150, by =30), labels =  paste(seq(30, 150, by =30), "°", sep = '') )
-# dev.off()
-
 
 # - density
 windows(width = 5, height = 4)
@@ -533,7 +453,6 @@ plot(dd$x, dd$y, type='l', bty='n', col='black', lwd=3, xlim = c(30, 150), xaxt=
 axis(1, at = seq(30, 150, by =30), labels = paste(seq(30, 150, by =30), "°", sep = ''), cex.axis = 1.5 )
 axis(2, at = c(0, 1/512/diff(dd$x[1:2]) ), labels = c('0', '1'), cex.axis = 1.5 )
 # dev.off()
-
 
 # - PLOT 2d Mollweide, angle
 df_pos <- data.frame(ucl_rot_Mo)
@@ -554,14 +473,13 @@ for (k in 1:3) {
   pt <- pt[c(2,3,4,5,6,7,2), ] 
   plt <- plt + geom_path(data=as.data.frame(pt), aes(x=xM, y=yM), colour='gray50',lwd=0.5)
 }
-
 windows(width = 9, height = 6)
 # pdf("ang_T4b_v_eye.pdf", width = 8.5, height = 4.5)
 plt
 # dev.off()
 
 
-#  example T4 angle, local meridian aligned ----------------------------------------------------------
+# cont. example T4 angle, local meridian aligned ----------------------------------------------------------
 nb_coord <- rbind(c(-5/180*pi,0),
                   c(+5/180*pi,0),
                   c(0, -5/180*pi),
@@ -577,7 +495,6 @@ T4direye <- lens_type[[LL]][, c('xd','yd','zd', 'x0','y0','z0')] %>% as.matrix()
 # PD field
 PD_eye <- 0.5*(RF_lens_T4_pred[,(3*(LL-1)+1):(3*(LL-1)+3)] - ucl_rot_sm)
 vv_eye <- ucl_rot_sm + PD_eye
-# vv <- ucl_rot_sm + 0.5*(RF_lens_T4_pred_sm[,(3*(LL-1)+1):(3*(LL-1)+3)] - ucl_rot_sm)
 vv_Mo <- sweep(vv_eye, 1, sqrt(rowSums(vv_eye^2)), '/')
 vv_Mo <- cart2sph2tp(vv_Mo)
 vv_Mo <- Mollweide(vv_Mo[,c('t', 'p')])
@@ -655,20 +572,19 @@ for (k in 1:3) {
 }
 
 # PLOT
-j <- 3 # j=1,2,or3
+## ## choose a hex j=1,2,or3
+j <- 3
+
 pt <- hex_eg[[j]]
 vv <- vv_eg[[j]]/2
 windows(width = 8, height = 8)
 # pdf(file = paste("hex_eg_T4_reg_", c("D","C","V")[j], ".pdf", sep='')) # from regression
 plot(pt, pch=16, axes=F, ann=F, cex=2, asp=1)
-# plot(pt, xlim=c(-0.1,0.4), ylim=c(-0.1,0.5))
-
 lines(pt[c(2,3,4,5,6,7,2),1:2], lwd=3)
 lines(pt[c(3,6), 1:2], lty = "dotted", lwd=2)
 a1 <- colMeans(pt[c(2,7),]) #right midpoint
 a2 <- colMeans(pt[c(4,5),]) # left
 va <- pt[3,] - pt[6,] # vertical vec upwards
-
 vT4 <- c(diff(vv))
 arrows(vv[1,1], vv[1,2], vv[2,1], vv[2,2], lwd=2, col=pal_T4[LL])
 title(paste(c("D","C","V")[j],
@@ -684,7 +600,6 @@ title(paste(c("D","C","V")[j],
 # generate sampling axes
 maxis_tpxyz <- axis_sampling(da = 2)
 
-
 # position
 d <- ucl_rot_sm
 colnames(d) <- c("X","Y","Z")
@@ -692,17 +607,14 @@ colnames(d) <- c("X","Y","Z")
 # - optimal t, R
 LL <- 2
 v_data <- RF_lens_T4_pred[,(3*(LL-1)+1):(3*(LL-1)+3)]- ucl_rot_sm 
-# v_data <- -v_data  #T4a
 v_data <- v_data - sweep(ucl_rot_sm, 1, rowSums(v_data * ucl_rot_sm), '*') #tangent
 ii <- ucl_rot_sm[,2] < -0.98
 p <- v_data / mean(sqrt(rowSums(v_data[ii,]^2)))
 vf_amp <- mean(sqrt(rowSums(v_data[ii,]^2)))
 
-
 # main loop
 R_cErr <- c()
 t_cErr <- c()
-# nd <- sum(!is.na(p[,1]))
 ii <- ucl_rot_sm[,2] < -0.98
 for (k in 1:dim(maxis_tpxyz)[1]) {
   # rot
@@ -734,17 +646,11 @@ pred_R_T4b <- pred_R[3:5]
 
 # - h-axis
 hex_hvf_eye <- matrix(ncol = 3, nrow = nrow(eyemap))
-hex_hvf_med <- matrix(ncol = 3, nrow = nrow(eyemap))
 for (j in 1:nrow(nb_ind)) {
   if (sum(complete.cases(nb_ind[j,])) == 7) {
-    # eye
     bt <- ucl_rot_sm[nb_ind[j,3], ] - ucl_rot_sm[nb_ind[j,6], ]
     bf <- colMeans(ucl_rot_sm[nb_ind[j,4:5],]) - colMeans(ucl_rot_sm[nb_ind[j,c(2,7)],])
     hex_hvf_eye[j,] <- bf
-    # med
-    bt <- med_xyz[nb_ind[j,3], ] - med_xyz[nb_ind[j,6], ]
-    bf <- colMeans(med_xyz[nb_ind[j,4:5],]) - colMeans(med_xyz[nb_ind[j,c(2,7)],])
-    hex_hvf_med[j,] <- bf
   }
 }
 v_data <- hex_hvf_eye
@@ -782,66 +688,13 @@ pred_t_hex <- pred_t[3:5]
 pred_R_hex <- pred_R[3:5]
 
 
-# PLOT
-windows(record = F, width = 16, height = 16)
-
-plt_df <- data.frame(azim = t_errLand$phi, elev = t_errLand$theta, 
-                     err = t_errLand$error) #need to move azim to [-180,180], elev can be chnaged via plotting axis
-plt_df$azim <- if_else(plt_df$azim > 180, plt_df$azim - 360, plt_df$azim)
-star <- c(plt_df$azim[which.min(plt_df$err)], plt_df$elev[which.min(plt_df$err)])
-gg1 <- ggplot(plt_df, aes(x=azim, y=elev, fill = err)) + 
-  geom_tile(aes(width = 5, height = 5), color = "white") +
-  scale_fill_gradient(low = "#fee8c8", high = "#e34a33", limit = range(t_errLand$error)) +
-  annotate("text", x = star[1], y = star[2], label = "*", size = 6) + 
-  # scale_x_continuous(breaks = seq(-180,180,by = 90), labels = seq(-180,180,by = 90) ) +
-  scale_x_continuous(breaks = seq(-180,180,by = 90), labels = seq(-180,180,by = 90) ) +
-  scale_y_reverse(breaks = seq(0,180,by = 90), labels = seq(90,-90,by = -90)) + 
-  ggtitle(paste('translation ', paste0(round(pred_t_T4b,2),collapse = '/'), sep='')) +
-  theme_minimal() +
-  coord_fixed(ratio=1)
-
-plt_df <- data.frame(x=seq(1,dim(maxis_tpxyz)[1]), error=sort(t_errLand[,3]))
-gg2 <- ggplot(plt_df, aes(x,y=error )) + 
-  geom_point() +
-  theme_minimal()
-
-plt_df <- data.frame(azim = R_errLand$phi, elev = R_errLand$theta, 
-                     error = R_errLand$error)
-plt_df$azim <- if_else(plt_df$azim > 180, plt_df$azim - 360, plt_df$azim)
-star <- c(plt_df$azim[which.min(plt_df$err)], plt_df$elev[which.min(plt_df$err)])
-gg3 <- ggplot(plt_df, aes(x=azim, y=elev, fill = error)) +
-  geom_tile(aes(width = 5, height = 5), color = "white") +
-  scale_fill_gradient(low = "#fee8c8", high = "#e34a33", limit = range(R_errLand[,3])) +
-  annotate("text", x = star[1], y = star[2], label = "*", size = 6) +
-  # scale_x_continuous(breaks = seq(-180,180,by = 90), labels = seq(-180,180,by = 90) ) +
-  scale_x_continuous(breaks = seq(-180,180,by = 90), labels = seq(-180,180,by = 90) ) +
-  scale_y_reverse(breaks = seq(0,180,by = 90), labels = seq(90,-90,by = -90)) +
-  ggtitle(paste('rotation ', paste0(round(pred_R_T4b,2),collapse = '/'), sep='')) +
-  theme_minimal() +
-  coord_fixed(ratio=1)
-
-plt_df <- data.frame(x=seq(1,dim(maxis_tpxyz)[1]), error=sort(R_errLand[,3]))
-gg4 <- ggplot(plt_df, aes(x,y=error )) + 
-  geom_point() +
-  theme_minimal() 
-
-ggdraw() +
-  draw_plot(gg1 + theme(legend.justification = "bottom"), x = 0, y = 0.5, width = 0.7, height = 0.45) +
-  draw_plot(gg2 + theme(axis.title = element_text()), 0.75, 0.6, 0.25, 0.25) +
-  draw_plot(gg3 + theme(axis.title = element_text()), 0, 0, 0.7, 0.45) +
-  draw_plot(gg4 + theme(axis.title = element_text()), 0.75, 0.1, 0.25, 0.25) 
-
-# ggsave("pred_motion.pdf", width = 8.5, height = 4.5) # big!
-
-
-
-# -- Mollweide 
+# PLOT Mollweide 
 star <- Mollweide(cart2sph2tp(matrix(pred_t_T4b,ncol=3))[, c('t','p')])
 star_op <- Mollweide(cart2sph2tp(matrix(-pred_t_T4b,ncol=3))[, c('t','p')])
 star2 <- Mollweide(cart2sph2tp(matrix(pred_R_T4b,ncol=3))[, c('t','p')])
 star2_op <- Mollweide(cart2sph2tp(matrix(-pred_R_T4b,ncol=3))[, c('t','p')])
 
-# --- trans
+# - trans
 err_xyz <- data.frame(x = maxis_tpxyz[,3], y = maxis_tpxyz[,4], z = maxis_tpxyz[,5])
 err_Mo <- Mollweide(cart2sph2tp(err_xyz)[, c('t','p')]) %>% as.data.frame()
 colnames(err_Mo) <- c('xM','yM')
@@ -849,23 +702,17 @@ err_Mo$quan <- t_cErr
 err_Mo <- err_Mo[err_Mo$xM != 0, ]
 
 plt <- plt_Mo +
-  # geom_point(data = err_Mo, aes(x=xM, y=yM, colour = quan), size=3 ) +
-  # scale_color_gradient(low = "gray85", high= "red", limits=c(0, 180), oob=scales::squish, 
-  #                      breaks= c(0,90, 180), labels= c(0,90,180), guide = guide_colorbar(title = "error [deg]"), na.value = 'yellow')
   geom_tile(data=err_Mo, aes(x=xM, y=yM, fill = quan), width = 1/sqrt(2)/10, height = 1/sqrt(8)/5, color = "white", na.rm = T) +
   scale_fill_gradient(low = "#fee8c8", high = "#e34a33", limit = range(R_errLand[,3]), guide = "colorbar", breaks=seq(30,150,by=60)) +
-  # scale_x_continuous(limits = c(-sqrt(8), sqrt(8)), expand = c(0, 1)) +
   annotate("text", x = star[1], y = star[2], label = "+", size = 20) +
   annotate("text", x = star_op[1], y = star_op[2], label = "+", size = 20)+
   theme(legend.position = c(.9, .9))
-
 windows(width = sqrt(8)*10, height = sqrt(2)*10)
 plt
 # ggsave("errLand_t.png", dpi = 600)
-# ggsave("errLand_legend_t.pdf", width = sqrt(8)*5, height = sqrt(2)*5) # big!
 # ggsave("errLand_legend_t.pdf", width = sqrt(8)*2, height = sqrt(2)*2) 
 
-# --- rot
+# - rot
 err_xyz <- data.frame(x = maxis_tpxyz[,3], y = maxis_tpxyz[,4], z = maxis_tpxyz[,5])
 err_Mo <- Mollweide(cart2sph2tp(err_xyz)[, c('t','p')]) %>% as.data.frame()
 colnames(err_Mo) <- c('xM','yM')
@@ -877,19 +724,14 @@ plt <- plt_Mo +
   scale_fill_gradient(low = "#fee8c8", high = "#e34a33", limit = range(R_errLand[,3])) +
   annotate("text", x = star2[1], y = star2[2], label = "x", size = 20) +
   annotate("text", x = star2_op[1], y = star2_op[2], label = "x", size = 20) 
-
 windows(width = sqrt(8)*10, height = sqrt(2)*10)
 plt
 # ggsave("errLand_R.png", dpi = 600)
 # ggsave("errLand_legend_R.pdf", width = sqrt(8)*2, height = sqrt(2)*2)
 
-# --- outline
-windows(width = sqrt(8)*10, height = sqrt(2)*10)
-plt_Mo
-# ggsave("errLand_ref.pdf", width = sqrt(8)*2, height = sqrt(2)*2)
-
 # cont. Fig.4E, Ideal optic flow field, Mollweide ----------------------------------------
 
+# - T4b PD
 LL = 2
 vv <- ucl_rot_sm + 0.5*(RF_lens_T4_pred[,(3*(LL-1)+1):(3*(LL-1)+3)] - ucl_rot_sm)
 vv_Mo <- sweep(vv, 1, sqrt(rowSums(vv^2)), '/')
@@ -898,30 +740,24 @@ vv_Mo <- Mollweide(vv_Mo[,c('t', 'p')])
 colnames(vv_Mo) <- c('xM','yM')
 rownames(vv_Mo) <- rownames(ucl_rot_sm)
 
-# cardinal directions
-## ##
+# - ideal flow field from cardinal movement
+## ## choose a cardinal translation
 vt_car <- t_gen(c(-1, 0, 0), as.matrix(ucl_rot_sm))*0.2 + ucl_rot_sm
+
 vt_car_Mo <- sweep(vt_car, 1, sqrt(rowSums(vt_car^2)), '/')
 vt_car_Mo <- cart2sph2tp(vt_car_Mo)
 vt_car_Mo <- Mollweide(vt_car_Mo[,c('t', 'p')])
 colnames(vt_car_Mo) <- c('xM','yM')
 rownames(vt_car_Mo) <- rownames(ucl_rot_sm)
 
+## ## choose a cardinal rotation
 vR_car <- R_gen(c(0,0,-1), as.matrix(ucl_rot_sm))*0.2 + ucl_rot_sm
+
 vR_car_Mo <- sweep(vR_car, 1, sqrt(rowSums(vR_car^2)), '/')
 vR_car_Mo <- cart2sph2tp(vR_car_Mo)
 vR_car_Mo <- Mollweide(vR_car_Mo[,c('t', 'p')])
 colnames(vR_car_Mo) <- c('xM','yM')
 rownames(vR_car_Mo) <- rownames(ucl_rot_sm)
-
-# T4 data
-vt_opt <- t_gen(pred_t_T4b, as.matrix(ucl_rot_sm))*0.1 + ucl_rot_sm
-vt_opt_Mo <- sweep(vt_opt, 1, sqrt(rowSums(vt_opt^2)), '/')
-vt_opt_Mo <- cart2sph2tp(vt_opt_Mo)
-vt_opt_Mo <- Mollweide(vt_opt_Mo[,c('t', 'p')])
-colnames(vt_opt_Mo) <- c('xM','yM')
-rownames(vt_opt_Mo) <- rownames(ucl_rot_sm)
-star <- Mollweide(cart2sph2tp(matrix(-pred_t_T4b,ncol=3))[, c('t','p')])
 
 # PLOT
 df_pos <- data.frame(ucl_rot_Mo)
@@ -934,110 +770,21 @@ colnames(df_arrow2) <- c('x','y','xend','yend')
 df_arrow3 <- data.frame(cbind(ucl_rot_Mo[,c('xM','yM')], vR_car_Mo[,c('xM','yM')]) )
 colnames(df_arrow3) <- c('x','y','xend','yend')
 
-df_arrow4 <- data.frame(cbind(ucl_rot_Mo[,c('xM','yM')], vt_opt_Mo[,c('xM','yM')]) )
-colnames(df_arrow4) <- c('x','y','xend','yend')
-
-
 # subsampling
 xy_sub <- seq(-20,20,by=3)
 indlens_sub <- lens_ixy[lens_ixy[,2] %in% xy_sub & lens_ixy[,3] %in% xy_sub, 1]
 ind_sub <- match(indlens_sub, eyemap[,2])
 
-
 plt <- plt_Momin +
-  # geom_path(data = chull_fov_Mo, aes(x=xM,y=yM), lwd = 0.1, colour = "black", alpha =0.5) +
-  # plt_Momin +
   geom_path(data = cmer, aes(x=xM, y=yM), colour = pal_axes[3], lwd=1) +
-  # geom_segment(data = df_arrow, aes(x = x,y = y, xend = xend,yend = yend), colour=pal_T4[LL],arrow = arrow(length = unit(0.008, "npc"), type = "closed"), size =1) +
+  ## ## choose a flow field
   # geom_segment(data = df_arrow, aes(x = x,y = y, xend = xend,yend = yend), colour=pal_T4[LL],size =1) +
-  # geom_segment(data = df_arrow2[ind_sub,], aes(x = x,y = y, xend = xend,yend = yend), colour=pal_TR[1], size =1) +
   # geom_segment(data = df_arrow2[ind_sub,], aes(x = x,y = y, xend = xend,yend = yend), colour=pal_TR[2], size =1) +
   geom_segment(data = df_arrow3[ind_sub,], aes(x = x,y = y, xend = xend,yend = yend), colour=pal_TR[6], size =1)
-  # geom_segment(data = df_arrow4, aes(x = x,y = y, xend = xend,yend = yend), colour=pal_TR[1], size =1) +
   annotate("text", x = star[1], y = star[2], label = "", size = 9)
-
 windows(width = 12, height = 8)
-# pdf(paste("T4", letters[LL], "_RF_Mollweide.pdf", sep = ''), width = 9.5, height = 6.5)
-# pdf(paste("vt_car_mx_Moll.pdf", sep = ''), width = 9.5, height = 6.5)
-# pdf(paste("vt_car_my_Moll.pdf", sep = ''), width = 9.5, height = 6.5)
-# pdf(paste("vR_car_mz_Moll.pdf", sep = ''), width = 9.5, height = 6.5)
-# pdf(paste("vt_opt_Mollweide.pdf", sep = ''), width = 9.5, height = 6.5)
 plt
-# dev.off()
-# ggsave("T4b_RF_Mollweide.pdf", width = 8.5, height = 4.5)
 
-
-# Ideal flow fields, subsampled as T4 ------------------------------
-
-# subsampling as T4 field
-# xy_sub <- seq(-18,18,by=3) # LPT
-xy_sub <- seq(-20,20,by=3) # as above
-# indlens_sub <- lens_ixy[lens_ixy[,2] %in% seq(-16,17,by=3) & lens_ixy[,3] %in% seq(-14,16,by=3), 1]
-indlens_sub <- lens_ixy[lens_ixy[,2] %in% xy_sub & lens_ixy[,3] %in% xy_sub, 1]
-ind_sub <- match(indlens_sub, eyemap[,2])
-
-
-pos3d <- ucl_rot_sm # index order should be the same as utp_ends_rot and RF_lens_T4_pred
-colnames(pos3d) <- c("X","Y","Z")
-
-
-ii <- na.omit(ind_sub)
-# position
-d <- pos3d[ii,]
-nd <- dim(d)[1]
-
-df_pos <- data.frame(ucl_rot_Mo)[ii, ]
-
-
-## ## rot
-samples_xyz <- rbind(pred_R_T4b,-pred_R_T4b)
-## ## trans
-samples_xyz <- rbind(pred_t_T4b,-pred_t_T4b)
-
-samples_Mo <- Mollweide(cart2sph2tp(samples_xyz)[, c('t','p')]) %>% as.data.frame()
-colnames(samples_Mo) <- c('xM','yM')
-
-# -- chull in Mollweid
-ii <- chull(ucl_rot_Mo)
-ii <- c(ii, ii[1])
-ind_chull <- ii
-chull_fov_Mo <- ucl_rot_Mo[ind_chull,] %>% as.data.frame()
-
-
-plt_ls <- list()
-# mang <- c()
-for (k in 1:dim(samples_xyz)[1]) {
-  # ## ## rot
-  # v <- R_gen(samples_xyz[k, ], d) #already normalized
-  ## ## trans
-  v <- t_gen(samples_xyz[k, ], d) #already normalized
-  
-  vv <- d + v /100
-  vv_Mo <- sweep(vv, 1, max(sqrt(rowSums(vv^2))), '/')
-  # vv_Mo <- vv
-  vv_Mo <- cart2sph2tp(vv_Mo)
-  vv_Mo <- Mollweide(vv_Mo[,c('t', 'p')])
-  colnames(vv_Mo) <- c('xM','yM')
-  
-  df_arrow_2 <- data.frame(cbind(df_pos - 0*(vv_Mo-df_pos), df_pos + 10*(vv_Mo-df_pos) ))
-  colnames(df_arrow_2) <- c('x','y','xend','yend')
-  
-  plt_ls[[k]] <-  plt_Mo +
-    # plt_Momin +
-    geom_path(data = chull_fov_Mo, aes(x=xM,y=yM), lwd = 0.1, colour = "black", alpha =0.5) +
-    geom_segment(data = df_arrow_2, aes(x = x,y = y, xend = xend,yend = yend), colour='black', size =0.1,alpha=1)+
-    # arrow= arrow(angle=15, length = unit(0.01, "npc"), type = "closed", ends = "last")) +
-    geom_point(data= samples_Mo[k,,drop=F], aes(x=xM, y=yM)) +
-    labs(title = "")
-}
-
-# # save
-# for (k in 1:dim(samples_xyz)[1]) {
-#   # pdf(file = paste0("of_optimal_trans", k, ".pdf"), width = 5, height = 2.5 )
-#   pdf(file = paste0("of_optimal_rot", k, ".pdf"), width = 9.5, height = 6.5 )
-#   print(plt_ls[[k]])
-#   dev.off()
-# }
 
 # cont. Fig.4F, angular error wrt cardinal/optimized motion VS lattice --------------
 
@@ -1048,8 +795,6 @@ v_hex <- matrix(ncol = 6, nrow = nrow(nb_ind))
 for (j in 1:nrow(nb_ind)) {
   if (sum(complete.cases(nb_ind[j,])) == 7) {
     ii_6nb[j] <- 1
-    # eye
-    # bt <- ucl_rot_sm[nb_ind[j,6], ] - ucl_rot_sm[nb_ind[j,7], ]
     bf <- colMeans(ucl_rot_sm[nb_ind[j,4:5],]) - colMeans(ucl_rot_sm[nb_ind[j,c(2,7)],])
     v_hex[j,] <- c(ucl_rot_sm[nb_ind[j,1], ], bf)
   }
@@ -1062,19 +807,15 @@ v_data <- v_data - sweep(ucl_rot_sm, 1, rowSums(v_data * ucl_rot_sm), '*') #tang
 ii <- ucl_rot_sm[,2] < -0.98
 v_data <- v_data / mean(sqrt(rowSums(v_data[ii,]^2)))
 
-# - artificial motoin
+# - ideal flow fields
 # use lens dir data
 pt0 <- as.matrix(ucl_rot_sm) #pts at t=0 on screen
 
-# of
 vt_car <- t_gen(c(-1,0,0), pt0)*0.1
 vR_car <- R_gen(c(0,0,-1), pt0)*0.1
 vt_opt <- t_gen(pred_t_T4b, pt0)*0.1
 vR_opt <- R_gen(pred_R_T4b, pt0)*0.1
-
-
 vt_car_y <- t_gen(c(0,-1,0), pt0)*0.1
-
 
 # - diff in ang
 ang_motion <- matrix(ncol = 6, nrow = nrow(ucl_rot_sm))
@@ -1099,7 +840,6 @@ windows(width = 6, height = 4)
 # png("comparison_T4b_PD.png", width = 1200, height = 900, pointsize=24)
 ggplot(dfm, aes(factor(Var2), value) ) + 
   geom_jitter(colour='black',size = 1,height = 0, width = 0.1) +
-  # scale_colour_manual(values = col_4_65, guide=FALSE) +
   stat_summary(fun.min = function(z) { quantile(z,0.25) },
                fun.max = function(z) { quantile(z,0.75) },
                geom = "errorbar", position = position_nudge(x = 0.3, y = 0),
@@ -1109,16 +849,9 @@ ggplot(dfm, aes(factor(Var2), value) ) +
   theme_minimal_grid() +
   scale_y_continuous(limits = c(0, 180), breaks = seq(0, 180, by=45), labels = paste(seq(0, 180, by=45),"°", sep = ''), expand = c(0, 0)) +
   scale_x_discrete(expand = c(0, 0)) +
-  # theme(axis.text.y = element_text(size = 20),axis.text.x = element_blank()) +
   theme(axis.text.y = element_blank(),axis.text.x = element_blank()) +
   labs(title = "", x='', y='') 
-# ggsave(filename = "comparison_T4b_all.png")
 # dev.off()
-
-colMeans(ang_motion, na.rm = T) %>% round(1)
-colMeans(ang_hex, na.rm = T) %>% round(1)
-apply(ang_motion, 2, median, na.rm=T)
-# apply(ang_hex, 2, median, na.rm=T)
 
 # t,R prediction, T4d ---------------------------------------------------------
 
@@ -1161,12 +894,10 @@ pred_t <- maxis_tpxyz[which.min(t_cErr),]
 pred_t_T4d <- pred_t[3:5]
 pred_R_T4d <- pred_R[3:5]
 
-
 # -- v-axis
 hex_hvf_eye <- matrix(ncol = 3, nrow = nrow(eyemap))
 for (j in 1:nrow(nb_ind)) {
   if (sum(complete.cases(nb_ind[j,])) == 7) {
-    # eye
     bt <- ucl_rot_sm[nb_ind[j,3], ] - ucl_rot_sm[nb_ind[j,6], ]
     hex_hvf_eye[j,] <- -bt
   }
@@ -1210,7 +941,6 @@ v_hex <- matrix(ncol = 6, nrow = nrow(nb_ind))
 for (j in 1:nrow(nb_ind)) {
   if (sum(complete.cases(nb_ind[j,])) == 7) {
     ii_6nb[j] <- 1
-    # eye
     bt <- ucl_rot_sm[nb_ind[j,3], ] - ucl_rot_sm[nb_ind[j,6], ] 
     v_hex[j,] <- c(ucl_rot_sm[nb_ind[j,1], ], -bt)
   }
@@ -1255,7 +985,6 @@ colnames(df) <- c('PD_hex', 'vR_car','vt_car','vt_car_my', 'vR_opt', 'vt_opt')
 dfm <- reshape2::melt(df)
 dfm <- na.omit(dfm)
 
-# windows(width = 3, height = 4)
 windows(width = 6, height = 4)
 # png("comparison_T4d_PD.png", width = 1200, height = 900, pointsize=24)
 ggplot(dfm, aes(factor(Var2), value) ) + 
@@ -1269,17 +998,9 @@ ggplot(dfm, aes(factor(Var2), value) ) +
   theme_minimal_grid() +
   scale_y_continuous(limits = c(0, 180), breaks = seq(0, 180, by=45), labels = paste(seq(0, 180, by=45),"°", sep = ''), expand = c(0, 0)) +
   scale_x_discrete(expand = c(0, 0)) +
-  # theme(axis.text.y = element_text(size = 20),axis.text.x = element_blank()) +
   theme(axis.text.y = element_blank(),axis.text.x = element_blank()) +
   labs(title = "", x='', y='') 
-# ggsave(filename = "comparison_T4d_PD.png")
 # dev.off()
-
-colMeans(ang_motion, na.rm = T) %>% round(1)
-colMeans(ang_hex, na.rm = T) %>% round(1)
-apply(ang_motion, 2, median, na.rm=T)
-apply(ang_hex, 2, median, na.rm=T)
-
 
 # Fig.4G, ED Fig.7F, partition by best fit to canonical/cardinal  motion ----------------------------------
 
@@ -1287,7 +1008,7 @@ apply(ang_hex, 2, median, na.rm=T)
 d <- ucl_rot_sm
 colnames(d) <- c("X","Y","Z")
 
-## ##
+## ## choose type
 LL <- 2
 v_data <- RF_lens_T4_pred[,(3*(LL-1)+1):(3*(LL-1)+3)]- ucl_rot_sm 
 v_data <- v_data - sweep(ucl_rot_sm, 1, rowSums(v_data * ucl_rot_sm), '*') #tangent
@@ -1332,7 +1053,6 @@ ls_car <- list(#t_gen(c(+1,0,0), d),
 
 angdiff <- matrix(ncol = length(ls_car), nrow = nrow(d))
 for (j in 1:length(ls_car)) {
-  # dd <- sqrt(rowSums((v - p)^2))
   angdiff[,j] <- angcos_vf(p, ls_car[[j]]) 
 }
 
@@ -1370,7 +1090,6 @@ plt <- plt_Mo34 +
   geom_segment(data = df_2[ind_sub,], aes(x = x,y = y, xend = xend,yend = yend), colour=pal_3[2],size =2, lineend = "round") +  
   geom_segment(data = df_3[ind_sub,], aes(x = x,y = y, xend = xend,yend = yend), colour=pal_3[3],size =2, lineend = "round") +  
   geom_segment(data = df_scale, aes(x = x,y = y, xend = xend,yend = yend), colour="black",size =2, lineend = "round") +  
-  # scale_color_manual(values = pal_3,guide= guide_legend(title="ang"), na.value="gray") +
   annotate("text", x = star[1], y = star[2], label = "+", size = 9) +
   annotate("text", x = star2[1], y = star2[2], label = "x", size = 9) +
   labs(title = "ang diff color")
@@ -1379,81 +1098,8 @@ windows(width = 12, height = 8)
 plt
 # dev.off()
 
-# ## ## -- Mollweide
-# LL = m
-# vv <- ucl_rot_sm + 0.5*(RF_lens_T4_pred[,(3*(LL-1)+1):(3*(LL-1)+3)] - ucl_rot_sm)
-# vv_Mo <- sweep(vv, 1, sqrt(rowSums(vv^2)), '/')
-# vv_Mo <- cart2sph2tp(vv_Mo)
-# vv_Mo <- Mollweide(vv_Mo[,c('t', 'p')])
-# colnames(vv_Mo) <- c('xM','yM')
-# rownames(vv_Mo) <- rownames(ucl_rot_sm)
-# 
-# # -- PLOT
-# df_pos <- data.frame(ucl_rot_Mo)
-# df_arrow <- data.frame(cbind(ucl_rot_Mo[,c('xM','yM')], vv_Mo[,c('xM','yM')]) )
-# colnames(df_arrow) <- c('x','y','xend','yend')
-# 
-# # plyr::count(df_arrow$col)
-# df_arrow$col <- apply(angdiff, 1, which.min) %>% factor()
-# 
-# star <- Mollweide(cart2sph2tp(matrix(pred_t_T4b,ncol=3))[, c('t','p')])
-# star2 <- Mollweide(cart2sph2tp(matrix(pred_R_T4b,ncol=3))[, c('t','p')])
-# 
-# plt <- plt_Mo34 +
-#   geom_path(data = cmer, aes(x=xM, y=yM), colour = pal_axes[3], lwd=1) +
-#   geom_segment(data = df_arrow, aes(x = x,y = y, xend = xend,yend = yend, colour=col),size =1) +  
-#   scale_color_manual(values = pal_3,guide= guide_legend(title="ang"), na.value="gray") +
-#   annotate("text", x = star[1], y = star[2], label = "+", size = 9) +
-#   annotate("text", x = star2[1], y = star2[2], label = "x", size = 9) +
-#   labs(title = "ang diff color")
-# windows(width = 12, height = 8)
-# # pdf(paste("T4", letters[LL], "_partition.pdf", sep = ''), width = 8.5, height = 4.5)
-# plt
-# # dev.off()
-
-# ## ## -- error for each motion
-# k <- 2
-# df_pos <- data.frame(ucl_rot_Mo)
-# df_pos$size <- angdiff[, k]
-# 
-# plt <- plt_Momin +
-#   geom_path(data = cmer, aes(x=xM, y=yM), colour = pal_axes[3], lwd=1) +
-#   geom_point(data=df_pos, aes(x=xM, y=yM, size = size),colour = pal_3[k]) +
-#   scale_size(name= 'ang diff', breaks = seq(30, 180, by=30), labels = seq(30, 180, by=30)) +
-#   theme(legend.position = c(.9, .9) ) +
-#   labs(title = "angdiff")
-# windows(width = 12, height = 8)
-# # pdf(paste("T4", letters[LL], "_angdiff_", k, ".pdf", sep = ''), width = 8.5, height = 4.5)
-# plt
-# # dev.off()
-
-
-# ## ## -- error for each motion, heat map
-# k <- 3
-# df_pos <- data.frame(ucl_rot_Mo)
-# df_pos$quan <- angdiff[, k]
-# 
-# rg <- c(0.01, 180)
-# 
-# plt <- plt_Mo34 +
-#   geom_path(data = cmer, aes(x=xM, y=yM), colour = pal_axes[3], lwd=1) +
-#   geom_point(data=df_pos, aes(x = xM, y = yM, colour = quan), size = 2) +
-#   # scale_color_gradientn(colours = pal_heat1, values = scales::rescale(rg), limits=range(rg), oob=scales::squish,
-#   #                       breaks= rg, labels= rg, guide = guide_colorbar(title = "ang") ) +
-#   scale_color_gradient(low = "blue", high= "gray90", limits=rg, oob=scales::squish, trans='log',
-#                        breaks= rg, labels= rg, guide = guide_colorbar(title = "angle")) +
-#   theme(legend.position = c(.9, .9) ) +
-#   labs(title = "angdiff")
-# windows(width = 12, height = 8)
-# # pdf(paste("T4", letters[LL], "_angdiff_heat_", k, ".pdf", sep = ''), width = 8.5, height = 4.5)
-# plt
-# # dev.off()
-
-
 
 # Fig.4H,  3d optimal axes ------------------------------------------------------------
-# image tracer + line art
-# atan2(pred_t_T4b[2], pred_t_T4b[1]) /pi*180 + 180
 
 eq_xyz <- cbind(cos(seq(0,360,by=5)/180*pi),
                sin(seq(0,360,by=5)/180*pi),
@@ -1489,49 +1135,21 @@ r_c[2] <- -r_c[2]
 
 nopen3d()
 par3d('windowRect' = c(50,50,1550,1550))
-# par3d('windowRect' = c(50,50,550,550))
 spheres3d(0,0,0,0.999, col='grey100', alpha=1, lit=F)
 arrow3d(pred_t_T4b*1.1, -pred_t_T4b*1.7, theta = pi / 18, n = 8, s=0.05, col = pal_T4[2], type = "rotation", lwd=2, lit=F)
 arrow3d(pred_R_T4b*1.1, -pred_R_T4b*1.75, theta = pi / 9, n = 8, s=0.05, col = pal_T4[2], type = "rotation", lwd=2, lit=F)
 arrow3d(pred_t_T4d*1.1, -pred_t_T4d*1.7, theta = pi / 18, n = 8, s=0.05, col = pal_T4[4], type = "rotation", lwd=2, lit=F)
 arrow3d(pred_R_T4d*1.1, -pred_R_T4d*1.75, theta = pi / 9, n = 8, s=0.05, col = pal_T4[4], type = "rotation", lwd=2, lit=F)
 
-# arrow3d(t_a*1.6, -t_a*1.7, theta = pi / 18, n = 8, s=0.05, col = pal_T4[1], type = "rotation", lwd=2, lit=F)
-# arrow3d(r_a*1.6, -r_a*1.75, theta = pi / 9, n = 8, s=0.05, col = pal_T4[1], type = "rotation", lwd=2, lit=F)
-# arrow3d(t_c*1.6, -t_c*1.7, theta = pi / 18, n = 8, s=0.05, col = pal_T4[3], type = "rotation", lwd=2, lit=F)
-# arrow3d(r_c*1.6, -r_c*1.75, theta = pi / 9, n = 8, s=0.05, col = pal_T4[3], type = "rotation", lwd=2, lit=F)
-# lines3d(rbind(-pred_t_T4b*1.6, pred_t_T4b*1.7), lwd=2)
-# lines3d(rbind(-pred_R_T4b*1.6, pred_R_T4b*1.75), lwd=2)
 lines3d(eq_xyz, lwd=2)
 lines3d(para_n, lwd=2)
 lines3d(para_s, lwd=2)
 lines3d(fr_xyz, lwd=2)
 lines3d(fr_45, lwd=2)
 lines3d(fr_m45, lwd=2)
-lines3d(side_xyz, lwd=2)
-# lines3d(rbind(c(1,0,0), c(1.6, 0, 0)), lwd=2)
-# lines3d(rbind(c(0,0,1), c(0, 0, 1.5)), lwd=2)
-# lines3d(rbind(c(0,-1,0), c(0, -1.8, 0)), lwd=2)
-# points3d(ucl_rot_sm[rownames(ucl_rot_sm) %in% lens_ixy[lens_ixy[,3] == 0, 1], ], size=12, col=pal_axes[1])
-# points3d(ucl_rot_sm[rownames(ucl_rot_sm) %in% lens_ixy[lens_ixy[,2] == -1, 1], ], size=12, col=pal_axes[2])
-# points3d(ucl_rot_sm[rownames(ucl_rot_sm) %in% vaxis_gen(-1), ], size=12, col=pal_axes[3])
-# points3d(ucl_rot_sm[c(ind_Up_ucl, ind_Down_ucl), ], size=12, col=pal_axes[4])
-# points3d(ucl_rot_sm, size=7, col='gray50')
-# arrow3d(c(1,0,0), c(1.6, 0, 0), theta = pi / 18, n = 8, col = "gray30", type = "rotation", lwd=2)
-segments3d(rbind(c(1,0,0), c(1.8, 0, 0)),col = "gray30",lwd=3)
-# text3d(c(1.3, -0.1, -0.3), texts = 'front', cex=3)
-# arrow3d(c(0,0,1), c(0, 0, 1.5), theta = pi / 12, n = 8, col = "gray30", type = "rotation", lwd=2)
+lines3d(side_xyz, lwd=2)segments3d(rbind(c(1,0,0), c(1.8, 0, 0)),col = "gray30",lwd=3)
 segments3d(rbind(c(0,0,1), c(0, 0, 1.5)),col = "gray30",lwd=3)
-# text3d(c(-0.2, -0.2, 1.5), texts = 'up', cex=3)
-# arrow3d(c(0,-1,0), c(0, -1.8, 0), theta = pi / 18, n = 8, col = "gray30", type = "rotation", lwd=2)
 segments3d(rbind(c(0,-1,0), c(0, -1.6, 0)),col = "gray30",lwd=3)
-# text3d(c(0.2, -1.8, 0), texts = 'side', cex=3)
-# planes3d(0,1,0, 0, alpha = 0.2, lit=F)
-# planes3d(0,0,1, 0, alpha = 0.2, lit=F)
 rgl.viewpoint(fov=0,zoom=0.7, userMatrix= rotationMatrix(-60/180*pi,1,0,0) %*% rotationMatrix(-55/180*pi,0,0,1))
-# rgl.viewpoint(fov=0,zoom=0.7, userMatrix= rotationMatrix(-80/180*pi,1,0,0) %*% rotationMatrix(-47/180*pi,0,0,1))
 
-# rgl.snapshot("3d_guide.png")
-# rgl.snapshot("3d_opt_noarrow.png")
 # rgl.snapshot("3d_opt.png")
-# rgl.postscript("3d_opt.pdf", "pdf") #no

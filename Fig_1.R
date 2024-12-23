@@ -41,10 +41,6 @@ for (j in 1:length(T4_eg_xformLOP_nosoma)) {
   T4_eg_xformLOP_nosoma[[j]]<- subset(tar, distal_points)
 }
 
-# - transform LOP mesh
-LOP_msh_xform_lop <- LOP_msh_mod
-LOP_msh_xform_lop$vb[1:3,] <- sweep(t(LOP_msh_mod$vb[1:3,]), 2, lop_pca$center) %*% lop_pca$rotation %>%  t()
-
 loplayer <- list()
 for (LL in 1:4) {
   xyz <- as.matrix(xyz_layer_T4[[LL]]) # points on lop layer
@@ -88,13 +84,12 @@ segments3d(sweep(rbind(
   c(0, 0, 0),
   rotate3d(rotate3d(c(1000, 0, 0), -90/180*pi, 1,0,0), -30/180*pi, 0,0,1)
   ), 2, c(3e4,0e5,0e5), '+'), lwd=2)
-
 # rgl.snapshot(filename = paste("T4_eg.png", sep = ''))
 
 
-# Fig.1C, PLOT dendrite with SN ------------------------------------------
+# Fig.1C, plot T4 dendrite with SN ------------------------------------------
 
-# - PLOT T4 dendrite
+# T4 dendrite within ME
 T4_eg_ME <- nlapply(T4_eg, subset, function(x) pointsinside(x, ME_msh,rval='distance')>-2000)
 # pc transform
 me_pca <- prcomp(xyzmatrix(T4_eg_ME))
@@ -115,7 +110,7 @@ for (j in 1:4) {
 subtree_xformME <- xEucl_neu(subtree, me_pca$rotation, me_pca$center)
 root_xyz_xformME <- sweep(root_xyz, 2, me_pca$center) %*% me_pca$rotation
 
-# choose a type
+## ## choose a type
 j <- 1
 tar <- subtree_xformME[[j]]
 ind_D = match(-1, tar$d$Parent)
@@ -141,7 +136,6 @@ for (i in 1:max(subtree_so$points)) {
 }
 segments3d(rbind(c(-10000, -5000, 0), c(-10000,-4000,0)), lwd=2) #1um
 rgl.viewpoint(fov=0,zoom=1, userMatrix= rotationMatrix(-90/180*pi,0,0,1) %*% rotationMatrix(180/180*pi,0,1,0) )
-
 # rgl.snapshot(filename = paste("T4_eg_dend_", j, "_.png", sep = ''))
 
 
@@ -163,7 +157,7 @@ vn %*% c(3e5,1e5,2e5)
 
 H2_prune <- subset(H2, vn %*% t(xyzmatrix(H2$d)) < -2.7e5 & vn %*% t(xyzmatrix(H2$d)) > -3.4e5)
 
-# -- T4
+# T4
 H2T4 <- T4_dend[[2]][c(153, 140, 25, 89, 149, 24, 21, 20)]
 
 # prune two of these
@@ -177,7 +171,7 @@ ind_D = match(tar$tags$`SAD junction` , tar$d$PointNo)
 ii <- distal_to(tar, node.idx = ind_D)
 H2T4[[7]] <- subset(tar, ii)
 
-# - PLOT
+# PLOT
 nopen3d()
 par3d('windowRect' = c(100,100,1000,700))
 plot3d(H2_prune, col='gray40', soma = T, WithNodes = F, lwd=1, alpha=0.5, lit=F)
@@ -189,15 +183,15 @@ segments3d(sweep(rbind(c(0, 0, 0),
                        rotate3d(rotate3d(c(10000, 0, 0), 20/180*pi, 0,1,0), -80/180*pi, 1,0,0)
                        ), 2, c(3e5,1e5,2e5), '+'), lwd=2)
 
-# Fig.1F, artificial field vs H2 -----------------------------------------------------
+# Fig.1F, ideal flow field vs H2 -----------------------------------------------------
 
 # - H2
 # combine arenaAng and headAnd
 uxy <- unique(tb[, c('stimPosX', 'stimPosY')])
 
+# compute PD in eye ref
 xyz_add <- matrix(ncol = 3, nrow = 0)
 sd_3d <- matrix(ncol = 3, nrow = 0)
-
 df <- matrix(ncol = 6, nrow = 0)
 for (j in 1:nrow(uxy)) {
   for (k in c(0,1)) {
@@ -246,15 +240,14 @@ for (j in 1:nrow(uxy)) {
                   unlist(cart2Mercator(dxyz_mean)),
                   as.integer(paste0(uxy$stimPosX[j],uxy$stimPosY[j])),
                   k)
-
       df <- rbind(df, df_tmp)
     }
   }
 }
 colnames(df) <- c('x','y','xend','yend','pos', 'edge')
 
-# variation in position
-sd_3d^2 %>% rowSums() %>% sqrt() %>% mean()
+# # variation in position
+# sd_3d^2 %>% rowSums() %>% sqrt() %>% mean()
 
 # positions for artificial flow field
 xyz_add <- data.frame(xyz_add)
@@ -272,7 +265,7 @@ df_arrow <- data.frame(df) %>%
 df_arrow$edge <- as.factor(df_arrow$edge)
 df_arrow_H2 <- df_arrow
 
-# - artificial
+# - ideal optic flow fields
 # initial positions
 dA <- 20
 pt0 <- matrix(ncol = 3) #pts on screen
@@ -290,7 +283,7 @@ pt0 <- pt0 %*% matrix(c(cos(-pi/2), sin(-pi/2), 0,
                         -sin(-pi/2), cos(-pi/2), 0,
                         0, 0, 1), ncol = 3, byrow = T)
 
-# -- full sphere
+# full sphere
 pt0b <- pt0
 pt0b[,2] <- -pt0b[,2]
 pt0 <- unique(rbind(pt0, pt0b))
@@ -316,8 +309,6 @@ pt_t1 <- sweep(pt_t1, MARGIN = 1, STATS = sqrt(rowSums(pt_t1^2)), FUN = '/') #pr
 for (j in 1:dim(pt_t0)[1]) {
   pt_t1[j,] <- pt_t1[j,] / c(pt_t0[j,] %*% pt_t1[j,])
 }
-# max(sqrt(rowSums((pt_t1 - pt_t0)^2)))
-# pt_t1 <-  (pt_t1 - pt_t0) * 150 + pt_t0
 pt_t1 <-  (pt_t1 - pt_t0) + pt_t0
 
 # noise
@@ -330,10 +321,8 @@ ii <- 1 - abs(pt_t0[,3]) > 0.01 & 1 - abs(pt_t1[,3]) > 0.01
 tp <- cart2sphZ(pt_t0)[,2:3]
 ii <- ii & abs(pi - tp[,2]) > 0.1
 pt0_Mer <- cart2Mercator(pt_t0[ii,])
-# pt0_Mer <- cart2Mercator(pt_t0[1 - abs(pt_t0[,2]) > 0.01,])
 pt1 <- sweep(pt_t1, 1, sqrt(rowSums(pt_t1^2)), '/')
 pt1_Mer <- cart2Mercator(pt1[ii,])
-# pt1_Mer <- cart2Mercator(pt1[1 - abs(pt1[,2]) > 0.01,])
 
 df_arrow <- data.frame(cbind(pt0_Mer, pt1_Mer) )
 colnames(df_arrow) <- c('x','y','xend','yend')

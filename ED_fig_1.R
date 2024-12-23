@@ -1,4 +1,4 @@
-# ED Fig.1A, artificial optic flows --------------------------------------------------
+# ED Fig.1A, ideal optic flows --------------------------------------------------
 
 pt0 <- matrix(ncol = 3) #pts on screen
 for (j in seq(0,90,by = 10)) {
@@ -6,8 +6,8 @@ for (j in seq(0,90,by = 10)) {
     pt0 <- rbind(pt0, c(sin(j/180*pi)*cos((k-90)/180*pi), sin(j/180*pi)*sin((k-90)/180*pi), cos(j/180*pi)))
   }
 }
-pt0 <- pt0[-1,]
-pt0m <- pt0 #flip the points
+pt0 <- pt0[-1,] #flip the points
+pt0m <- pt0 
 pt0m[,3] <- -pt0m[,3]
 pt0 <- unique(rbind(pt0, pt0m)) # full hemisphere
 pt0 <- pt0 %*% matrix(c(cos(-pi/2), sin(-pi/2), 0,
@@ -18,6 +18,7 @@ colnames(pt_t0) <- c("x","y","z")
 
 # distance to objects
 R <- 1000 
+
 # translation
 dx <- 0
 dy <- 0
@@ -121,7 +122,7 @@ rgl.viewpoint(fov=0,zoom=0.71, userMatrix= rotationMatrix(-90/180*pi,1,0,0) %*%
                 rotationMatrix(7/180*pi,1,0,0))
 # rgl.snapshot(filename = paste("ideal_flow_rot.png", sep = ''))
 
-# ED Fig.1B, H2 reconstruction -------------------------------------------------------
+# ED Fig.1B, H2 reconstruction ------------------------------------------------
 
 nopen3d()
 par3d('windowRect' = c(100,100,1000,720))
@@ -140,12 +141,6 @@ rgl.viewpoint(fov=0,zoom=0.6, userMatrix= rotationMatrix(+20/180*pi,0,1,0) %*%
 # ED Fig.1D, combine all grating data, avg ------------------------------------
 
 load('data/H2_tuning.rda' )
-
-# remove for avg
-tb_v <- tb_v[!tb$stimPosX == 87,]
-tb <- tb[!tb$stimPosX == 87,]
-tb_v <- tb_v[!tb$stimPosY == 24,]
-tb <- tb[!tb$stimPosY == 24,]
 
 uxy <- unique(tb[, c('stimPosX', 'stimPosY')])
 
@@ -380,10 +375,10 @@ resp <- aov(ang ~ stimTypePos + edgeVal, data = df4)
 summary(resp)
 
 
-# ED Fig.1F, deformation, mod from "new data 2023 edge" ------------------------
+# ED Fig.1F, deformation,  ------------------------
 
 # make template, center plus 8 directions
-NN <- 8.5 # num of pixel as radius
+NN <- 10 # num of pixel as radius
 
 NXY <- data.frame(dx = c(0,NN,0,-NN,0,NN/sqrt(2),-NN/sqrt(2),-NN/sqrt(2),NN/sqrt(2)),
                   dy = c(0,0,NN,0,-NN,NN/sqrt(2),NN/sqrt(2),-NN/sqrt(2),-NN/sqrt(2)))
@@ -414,15 +409,12 @@ Dz <- - (1+ 13/32)
 # LED size, assume 1.25 at equator
 DL <- A * 1.25/180*pi
 
-# response amp factor
-resfac <- 1
-
 # - loop
 stims <- matrix(ncol = 2, nrow = nrow(pos)) # [elev azim]
 
 for (j in 1:nrow(stims)) {
   arot <- pos$arenaAng[j] /180*pi #arena rotation ang
-  afly <- pos$headAng[j] /180*pi #eqator below holder
+  afly <- pos$headAng[j] /180*pi #equator below holder
   
   # cylindrical arena, 2d
   # angle from sagittal plane
@@ -505,7 +497,6 @@ plt <- plt_Mer +
 windows(width = 6.5, height = 6.5)
 plt
 # ggsave("arena_deform.pdf", width = 8, height = 8)
-
 
 # - avg amplitudes 1 vs 4
 p1 <- sweep(xyz[2:9,], 2, xyz[1,,drop=F], '-')^2 %>% rowSums() %>% mean() %>% sqrt()

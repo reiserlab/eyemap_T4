@@ -1,3 +1,4 @@
+# see Fig_3_uCT.R for ED Fig.4D, ED Fig.4E, ED Fig.4G
 
 # ED Fig.4B, normal VS tip-lens ------------------------------------------------------
 
@@ -17,7 +18,6 @@ nucl_rot_Mo_right %<>% as_tibble() %>%
 nucl_rot_Mo_right <- Mollweide(nucl_rot_Mo_right[,c('t', 'p')])
 colnames(nucl_rot_Mo_right) <- c('xM','yM')
 
-
 df_pos <- data.frame(ucl_rot_Mo_right)
 df_pos$quan <- acos(rowSums(ucl_rot_right * nucl))
 
@@ -35,12 +35,14 @@ windows(width = 12, height = 8)
 plt
 # dev.off()
 
-# ED Fig.4H, ED Fig.4G, curvature and dia, --------
+# ED Fig.4H, ED Fig.4J, curvature and dia, -----------------------------------
 
-# - PLOT sphere
+# plot sphere
+
 ## ## all points
 pts <- lens
 xyz_data <- pts
+
 ## ## central points
 ii <- nb_ind[nb_ind[1,],] %>% unique() #central
 pts <- lens[as.integer(rownames(ucl_rot_sm[ii,])),]
@@ -75,8 +77,10 @@ lens_ixy_hex[,2:3] <- lens_ixy_hex[,2:3] %*% unit_hex
 # - PLOT cur
 quantile(ind_roc[,c(3,5,6)], c(0,0.05,0.25,0.5,0.75,0.95,1),na.rm=T)
 bin_lim <- c(120, 320)
+
 ## ## choose a direction, 3-v, 5-h, 6-sph
-df <- cbind(lens_ixy_hex[,2:3], ind_roc[,3]) %>% as.data.frame()
+ii <- 3
+df <- cbind(lens_ixy_hex[,2:3], ind_roc[,ii]) %>% as.data.frame()
 colnames(df) <- c('x','y','r')
 
 plt <- ggplot() + 
@@ -85,20 +89,16 @@ plt <- ggplot() +
     low = "gray95", high= "magenta", limits=bin_lim, oob=scales::squish,# trans='log',
     breaks=bin_lim, labels=bin_lim, guide = guide_colorbar(title = "r[um]"), 
     na.value = 'yellow') +
-  # scale_x_continuous(limits = c(-sqrt(8), sqrt(8)), expand = c(0, 0)) +
-  # scale_y_continuous(limits = c(-sqrt(2), sqrt(2)), breaks = c(-1.5,0,1.5), labels = c(-1.5,0,1.5), expand = c(0, 0)) + # set +y as above eq
   theme_void() +
   theme(legend.position = c(.9, .9) ) +
-  # theme(legend.position="none", panel.background = element_blank()) +
   coord_fixed(ratio = 1) +
   labs(title = "radius of curvature along v-axis")
 # labs(title = "radius of curvature along h-axis")
 # labs(title = "radius of curvature sph")
 windows(width = 8, height = 8)
-# pdf("roc_p.pdf")
 # pdf("roc_v.pdf")
-# pdf("roc_q.pdf")
 # pdf("roc_h.pdf")
+# pdf("roc_sph.pdf")
 plt
 # dev.off()
 
