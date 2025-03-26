@@ -1,10 +1,10 @@
 # eyemap_T4
-R code for "Eye structure shapes neuron function in Drosophila motion vision"
+R code for "Eye structure shapes neuron function in Drosophila motion vision"  
 Tested with R 4.4.1 and Rstudio 2024.12.1.
 
 R packages are versioned using renv:
 https://rstudio.github.io/renv/articles/renv.html  
-Suggest start with copying this repo and run `renv::restore()`
+Suggest start with copying this repo and run `renv::restore()`  
 Estimated installation time: 30 min
 
 To reproduce plots in the paper, start with `Fig_0.R` and follow the instruction at the beginning.  
