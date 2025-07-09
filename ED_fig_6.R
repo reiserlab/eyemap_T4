@@ -1,4 +1,4 @@
-# see Fig_4.R for ED Fig.6A, ED Fig.6E
+# see Fig_4.R for ED Fig.6A, ED Fig.6F
 
 # ED Fig.6A, Mercator projection ---------------------------------------------
 
@@ -27,7 +27,65 @@ plt
 # ggsave(paste("T4", letters[LL], "_RF_Mercator_PD.pdf",sep=''), width = 5, height = 6.5)
 
 
-# ED Fig.6B, size, T4b -----------------------------------------------------------
+# ED Fig.6B,  shear angle  vs T4  --------------------------------------------------
+
+# ang betw (bot->top) and (back->front), that is, +v
+nb_ang_ucl <- matrix(ncol = 2, nrow = nrow(eyemap))
+hex_hvf_eye <- matrix(ncol = 3, nrow = nrow(eyemap))
+hex_hvf_med <- matrix(ncol = 3, nrow = nrow(eyemap))
+for (j in 1:nrow(nb_ind)) {
+  if (sum(complete.cases(nb_ind[j,])) == 7) {
+    bt <- ucl_rot_sm[nb_ind[j,3], ] - ucl_rot_sm[nb_ind[j,6], ]
+    bf <- colMeans(ucl_rot_sm[nb_ind[j,4:5],]) - colMeans(ucl_rot_sm[nb_ind[j,c(2,7)],])
+    hex_hvf_eye[nb_ind[j,1],] <- bf
+    ang <- acos(bt %*% bf / sqrt(sum(bt^2)) / sqrt(sum(bf^2)) ) /pi*180 
+    nb_ang_ucl[nb_ind[j,1],] <- c(j, ang)
+  }
+}
+
+# angles between eye v-axis and T4b
+v_data <- (RF_lens_T4_pred_sm[,(3*(LL-1)+1):(3*(LL-1)+3)] - ucl_rot_sm) 
+
+# -- vertical axis
+ang_T4_vaxis_eye <- matrix(NA, ncol = 1, nrow = nrow(eyemap))
+for (j in 1:nrow(nb_ind)) {
+  if (sum(is.na(nb_ind[j,c(3,6)])) == 0) {
+    xyz2 <- ucl_rot_sm[nb_ind[j,1],,drop=F]
+    vv12 <- ucl_rot_sm[nb_ind[j,3],] - ucl_rot_sm[nb_ind[j,1],] #vector goes bottom --> top, along +h axis
+    vv12 <- vv12 - sum(vv12 * xyz2) * xyz2 # tangent vector from one lens to another
+    vv23 <- ucl_rot_sm[nb_ind[j,1],] - ucl_rot_sm[nb_ind[j,6],]
+    vv23 <- vv23 - sum(vv23 * xyz2) * xyz2 # tangent vector from one lens to another
+    vvT4 <- v_data[nb_ind[j,1], ,drop=F ]
+    ang12 <- acos(vv12 %*% t(vvT4) / sqrt(sum(vv12^2)) / sqrt(sum(vvT4^2)) )
+    ang12 <- ang12 * sign( xyz2 %*% cross3D(vvT4, vv12) )
+    ang23 <- acos(vv23 %*% t(vvT4) / sqrt(sum(vv23^2)) / sqrt(sum(vvT4^2)) )
+    ang23 <- ang23 * sign( xyz2 %*% cross3D(vvT4, vv23) )
+    ang_T4_vaxis_eye[j] <- (ang12+ang23)/2/pi*180
+  }
+} 
+ang_T4b_vaxis_eye <- ang_T4_vaxis_eye
+
+
+# - PLOT 2d Mollweide, angle diff
+df_pos <- data.frame(ucl_rot_Mo)
+df_pos$quan <- ang_T4b_vaxis_eye - nb_ang_ucl[,2]
+
+quantile(df_pos$quan, c(0.01,0.05,0.25,0.5,0.75,0.95,0.99), na.rm = T)
+rg <- c(-15, 0, 15) 
+
+plt <- plt_Momin + 
+  geom_path(data = cmer, aes(x=xM, y=yM), colour = pal_axes[3], lwd=1) +
+  geom_point(data=df_pos, aes(x = xM, y = yM, colour = quan), size = 2) +
+  scale_color_gradientn(colours = pal_heat1, values = scales::rescale(rg), limits=range(rg), oob=scales::squish,
+                        breaks= rg, labels= rg, guide = guide_colorbar(title = "t4b-v-shear") ) +
+  theme(legend.position = c(.9, .9) ) +
+  labs(title = "T4b-h on eye")
+windows(width = 9, height = 6)
+# pdf("t4b_haxis_eye.pdf", width = 8.5, height = 4.5)
+plt
+# dev.off()
+
+# ED Fig.6C, size, T4b -----------------------------------------------------------
 
 LL <- 2 # choose type
 
@@ -135,7 +193,7 @@ points(x, np_pred[ii], col=pal_heat2[2], type='p', pch=16)
 # dev.off()
 
 
-# ED Fig.6F, regression med_xyz to ucl_rot_sm -----------------------------------------------
+# ED Fig.6G, regression med_xyz to ucl_rot_sm -----------------------------------------------
 
 load("data/eyemap.RData")
 N <- nrow(med_xyz)

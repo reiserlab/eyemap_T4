@@ -380,7 +380,7 @@ text(refhex_2, labels = seq(1,nrow(refhex_2)), adj = 2)
 rs <- mean(nb_dist_med, na.rm =T) / mean(sqrt(rowSums(refhex_1[-1,]^2)))
 rs <- 1
 
-## ## choose type
+# T4b
 LL <- 2 
 
 com_xyz <- dir_type[[LL]][, c('comx','comy','comz')] %>% as.matrix()
@@ -471,7 +471,7 @@ colnames(df_arrow) <- c('x','y','xend','yend')
 windows(width = 7, height = 10)
 plt <- ggplot() +
   geom_segment(data = df_arrow, aes(x = x,y = y, xend = xend,yend = yend), colour='gray',size =0.2) +
-  geom_point(data=df0, aes(x,y), size=30, pch=1) +
+  geom_point(data=df0, aes(x,y), size=46, pch=1) +
   geom_point(data=df, aes(x=x,y=y, col=gp), size=3, na.rm = T ) +
   scale_color_manual(values = c(scales::alpha('violetred', 0.7), scales::alpha('cyan3', 0.7), scales::alpha('gray20', 0.5)), guide= guide_legend(title="")) +
   ylab("y") +   xlab("x") +
@@ -485,8 +485,7 @@ plt <- ggplot() +
 plt 
 # dev.off()
 
-
-# cont. T4d, ED Fig.3E ----------------------------------------------
+# cont. T4d,  ----------------------------------------------
 
 LL <- 4 # choose type
 com_xyz <- dir_type[[LL]][, c('comx','comy','comz')] %>% as.matrix()
@@ -575,7 +574,7 @@ colnames(df_arrow) <- c('x','y','xend','yend')
 windows(width = 7, height = 10)
 plt <- ggplot() +
   geom_segment(data = df_arrow, aes(x = x,y = y, xend = xend,yend = yend), colour='gray',size =0.2) +
-  geom_point(data=df0, aes(x,y), size=30, pch=1) +
+  geom_point(data=df0, aes(x,y), size=46, pch=1) +
   geom_point(data=df, aes(x=x,y=y, col=gp), size=3, na.rm = T ) +
   scale_color_manual(
     values= c(scales::alpha('violetred', 0.7), scales::alpha('cyan3', 0.7), scales::alpha('gray20', 0.5)), 
@@ -592,25 +591,38 @@ plt <- ggplot() +
 plt 
 # dev.off()
 
-# cont., ED Fig.3D, Fig.2J, Fig.2K, PD amplitude and angle in reg grid ---------------
+# cont. ED Fig.3C, OD vs PD, scatter in um ------------------------------------------
 
-# T4b
-ii <- cc_b ==19
-PD_hex <- PD_hex_b[ii, ]
-OD_hex <- OD_hex_b[ii, ]
-PDOD_T4b <- cbind(sqrt(rowSums((PD_hex[,1:2] - PD_hex[,3:4])^2)), sqrt(rowSums((OD_hex[,1:2] - OD_hex[,3:4])^2)) )
-PD_ang_T4b <- atan2(PD_hex[,4] - PD_hex[,2], PD_hex[,3] - PD_hex[,1]) /pi*180
-PD_ang_T4b <- 90 - PD_ang_T4b # wrt +v
-# T4d
-ii <- cc_d ==19
-PD_hex <- PD_hex_d[ii, ]
-OD_hex <- OD_hex_d[ii, ]
-PDOD_T4d <- cbind(sqrt(rowSums((PD_hex[,1:2] - PD_hex[,3:4])^2)), sqrt(rowSums((OD_hex[,1:2] - OD_hex[,3:4])^2)) )
-PD_ang_T4d <- atan2(PD_hex[,4] - PD_hex[,2], PD_hex[,3] - PD_hex[,1]) /pi*180
-PD_ang_T4d <- 90 - PD_ang_T4d
+LL <- 2 # choose type
+ii <- cc_b ==19 
 
-# -- scatter plot
-df <- rbind(cbind(PDOD_T4b, 2), cbind(PDOD_T4d, 4) )
+v0 <- dir_type[[LL]][ ,c('rsx0','rsy0','rsz0')] %>% as.matrix() 
+v1 <- dir_type[[LL]][ ,c('rsxd','rsyd','rszd')] %>% as.matrix()
+v6 <- dir_type[[LL]][ ,c('odx0','ody0','odz0')] %>% as.matrix()
+v7 <- dir_type[[LL]][ ,c('odxd','odyd','odzd')] %>% as.matrix()
+
+PDOD_um_T4b <- cbind(
+  sqrt(rowSums((v1 - v0)^2)) /1000, 
+  sqrt(rowSums((v7 - v6)^2)) /1000 ) #in um
+PDOD_um_T4b <- PDOD_um_T4b[ii, ]
+
+
+LL <- 4 # choose type
+ii <- cc_d ==19 
+
+v0 <- dir_type[[LL]][ ,c('rsx0','rsy0','rsz0')] %>% as.matrix() 
+v1 <- dir_type[[LL]][ ,c('rsxd','rsyd','rszd')] %>% as.matrix()
+v6 <- dir_type[[LL]][ ,c('odx0','ody0','odz0')] %>% as.matrix()
+v7 <- dir_type[[LL]][ ,c('odxd','odyd','odzd')] %>% as.matrix()
+
+PDOD_um_T4d <- cbind( 
+  sqrt(rowSums((v1 - v0)^2)) /1000, 
+  sqrt(rowSums((v7 - v6)^2)) /1000 ) #in um
+PDOD_um_T4d <- PDOD_um_T4d[ii, ]
+
+
+# scatter plot
+df <- rbind(cbind(PDOD_um_T4b, 2), cbind(PDOD_um_T4d, 4) )
 df <- as.data.frame(df)
 colnames(df) <- c('PD','OD','gp')
 df$gp <- factor(df$gp)
@@ -622,14 +634,67 @@ plt <- ggplot(df) +
   theme(axis.text = element_text(size = 18),
         axis.title = element_text(size = 18),
         panel.grid.minor = element_blank() )+
-  scale_x_continuous(limits = c(2, 6), breaks = seq(2,6), labels = seq(2,6), expand = c(0, 0)) +
-  scale_y_continuous(limits = c(2, 6), breaks = seq(2,6), labels = seq(2,6), expand = c(0, 0)) + # set +y as above eq
-  labs(title = paste("OD vs PD_med", "_norm_unit", sep = "")) +
+  scale_x_continuous(limits = c(5, 25), breaks = seq(0,25,by=5), labels = seq(0,25,by=5), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(5, 25), breaks = seq(0,25,by=5), labels = seq(0,25,by=5), expand = c(0, 0)) +
+  labs(title = paste("OD vs PD_med", "_um", sep = "")) +
   coord_fixed(ratio=1)
 windows(width = 8, height = 8)
-# pdf("OD_PD_hex.pdf",width = 8, height = 8)
+# pdf("OD_PD_um.pdf",width = 8, height = 8)
+# plt
 ggMarginal(plt, margins = "both", size = 4, type = "density", groupColour = TRUE, groupFill = F, lwd=2)
 # dev.off()
+
+
+# COV
+sd(PDOD_um_T4b[,1]) / mean(PDOD_um_T4b[,1])
+sd(PDOD_um_T4b[,2]) / mean(PDOD_um_T4b[,2])
+sd(PDOD_um_T4d[,1]) / mean(PDOD_um_T4d[,1])
+sd(PDOD_um_T4d[,2]) / mean(PDOD_um_T4d[,2])
+
+# cont.,Fig.2J, Fig.2K, PD amplitude and angle in reg grid ---------------
+
+# T4b
+ii <- cc_b ==19
+PD_hex <- PD_hex_b[ii, ]
+OD_hex <- OD_hex_b[ii, ]
+PDOD_T4b <- cbind(
+  sqrt(rowSums((PD_hex[,1:2] - PD_hex[,3:4])^2)), 
+  sqrt(rowSums((OD_hex[,1:2] - OD_hex[,3:4])^2)) 
+  )
+PD_ang_T4b <- atan2(PD_hex[,4] - PD_hex[,2], PD_hex[,3] - PD_hex[,1]) /pi*180
+PD_ang_T4b <- 90 - PD_ang_T4b # wrt +v
+# T4d
+ii <- cc_d ==19
+PD_hex <- PD_hex_d[ii, ]
+OD_hex <- OD_hex_d[ii, ]
+PDOD_T4d <- cbind(
+  sqrt(rowSums((PD_hex[,1:2] - PD_hex[,3:4])^2)), 
+  sqrt(rowSums((OD_hex[,1:2] - OD_hex[,3:4])^2)) 
+  )
+PD_ang_T4d <- atan2(PD_hex[,4] - PD_hex[,2], PD_hex[,3] - PD_hex[,1]) /pi*180
+PD_ang_T4d <- 90 - PD_ang_T4d
+
+# # -- scatter plot
+# df <- rbind(cbind(PDOD_T4b, 2), cbind(PDOD_T4d, 4) )
+# df <- as.data.frame(df)
+# colnames(df) <- c('PD','OD','gp')
+# df$gp <- factor(df$gp)
+# plt <- ggplot(df) +
+#   geom_point(aes(x = PD, y = OD, colour = gp), size = 3, alpha=0.8) +
+#   scale_color_manual(values= pal_T4[c(2,4)],labels = c("T4b", "T4d"), guide= guide_legend(title="dist[norm]"), na.value="gray") +
+#   ylab("OD") + xlab("PD") +
+#   theme_minimal() +
+#   theme(axis.text = element_text(size = 18),
+#         axis.title = element_text(size = 18),
+#         panel.grid.minor = element_blank() )+
+#   scale_x_continuous(limits = c(2, 6), breaks = seq(2,6), labels = seq(2,6), expand = c(0, 0)) +
+#   scale_y_continuous(limits = c(2, 6), breaks = seq(2,6), labels = seq(2,6), expand = c(0, 0)) + # set +y as above eq
+#   labs(title = paste("OD vs PD_med", "_norm_unit", sep = "")) +
+#   coord_fixed(ratio=1)
+# windows(width = 8, height = 8)
+# # pdf("OD_PD_hex.pdf",width = 8, height = 8)
+# ggMarginal(plt, margins = "both", size = 4, type = "density", groupColour = TRUE, groupFill = F, lwd=2)
+# # dev.off()
 
 # -- ang density
 windows(width = 8, height = 4)
@@ -644,18 +709,18 @@ axis(1, at = seq(-45+90, 45+180, by =45), labels = paste(seq(-45+90, 45+180, by 
 axis(2, at = c(0, 1/512/diff(dd$x[1:2]) ), labels = c('0', '1'), cex.axis = 1.5 )
 # dev.off()
 
-sum(PD_ang_T4d > 180)
-sum(PD_ang_T4b < 90)
+sum(PD_ang_T4d < 180)
+sum(PD_ang_T4b > 90)
 t.test(PD_ang_T4b, mu = 90)
 t.test(PD_ang_T4d, mu = 0)
 
 # -- PD amp density
 windows(width = 8, height = 4)
 # pdf(paste("PD_amp_hex.pdf", sep = ""), width = 8, height = 4)
-dd <- density(PDOD_T4b[,1], from= 2, to= 6, bw='SJ')
+dd <- density(PDOD_T4b[,1], from= 2, to= 6, bw='sj')
 plot(dd$x, dd$y, type='l', bty='n', col=pal_T4[2], lwd=3, xlim = c(2, 6), xaxt='n',yaxt='n',
      xlab ="", ylab='',main = '')
-dd <- density(PDOD_T4d[,1], from= 2, to= 6, bw='SJ')
+dd <- density(PDOD_T4d[,1], from= 2, to= 6, bw='sj')
 points(dd$x, dd$y, type='l', bty='n',col=pal_T4[4], lwd=3)
 axis(1, at =  seq(2, 6, by =1), labels =  seq(2, 6, by =1), cex.axis = 1.5 )
 axis(2, at = c(0, 1/512/diff(dd$x[1:2]) ), labels = c('0', '1'), cex.axis = 1.5 )
@@ -664,20 +729,23 @@ axis(2, at = c(0, 1/512/diff(dd$x[1:2]) ), labels = c('0', '1'), cex.axis = 1.5 
 wilcox.test(PDOD_T4b[,1], PDOD_T4d[,1])
 t.test(PDOD_T4b[,1], PDOD_T4d[,1])
 
-
-# Fig.2M, ED Fig.3D, OD vs PD, scatter + hist, normalized by column edge distance --------------------
+# cont. Fig.2M, ED Fig.3D, OD vs PD, normalized by column edge distance --------------------
 
 ii <- cc_b ==19 
 PD_hex <- PD_hex_b[ii, ]
 OD_hex <- OD_hex_b[ii, ]
-PDOD_T4b <- cbind(sqrt(rowSums((PD_hex[,1:2] - PD_hex[,3:4])^2)) /(2+sqrt(2)),
-                  sqrt(rowSums((OD_hex[,1:2] - OD_hex[,3:4])^2)) /(4+sqrt(2)) ) 
+PDOD_T4b <- cbind(
+  sqrt(rowSums((PD_hex[,1:2] - PD_hex[,3:4])^2)) /(2+sqrt(2)),
+  sqrt(rowSums((OD_hex[,1:2] - OD_hex[,3:4])^2)) /(4+sqrt(2)) 
+) 
 
 ii <- cc_d ==19 
 PD_hex <- PD_hex_d[ii, ]
 OD_hex <- OD_hex_d[ii, ]
-PDOD_T4d <- cbind(sqrt(rowSums((PD_hex[,1:2] - PD_hex[,3:4])^2)) /(4+sqrt(2)),
-                  sqrt(rowSums((OD_hex[,1:2] - OD_hex[,3:4])^2)) /(2+sqrt(2)) ) 
+PDOD_T4d <- cbind(
+  sqrt(rowSums((PD_hex[,1:2] - PD_hex[,3:4])^2)) /(4+sqrt(2)),
+  sqrt(rowSums((OD_hex[,1:2] - OD_hex[,3:4])^2)) /(2+sqrt(2)) 
+) 
 
 # scatter plot
 df <- rbind(cbind(PDOD_T4b, 2), cbind(PDOD_T4d, 4) )
@@ -695,7 +763,7 @@ plt <- ggplot(df) +
   scale_x_continuous(limits = c(0.4, 1.4), breaks = seq(0,1.4,by=0.2), labels = seq(0,1.4,by=0.2), expand = c(0, 0)) +
   scale_y_continuous(limits = c(0.4, 1.4), breaks = seq(0,1.4,by=0.2), labels = seq(0,1.4,by=0.2), expand = c(0, 0)) +
   labs(title = paste("OD vs PD_med", "_separate_unit", sep = "")) +
-   coord_fixed(ratio=1)
+  coord_fixed(ratio=1)
 windows(width = 8, height = 8)
 # pdf("OD_PD_hex_sepa_norm.pdf",width = 8, height = 8)
 # plt
@@ -736,7 +804,7 @@ mu <- plyr::ddply(df, "gp", summarise, grp.mean=mean(amp))
 windows(width = 8, height = 4)
 # pdf(paste("PD_normDist.pdf", sep = ""), width = 8, height = 4)
 ggplot() +
-  geom_density(data= df, aes(amp, color=gp), position= 'identity', bw= 'SJ', lwd=3) +
+  geom_density(data= df, aes(amp, color=gp), position= 'identity', bw= 'sj', lwd=3) +
   scale_color_manual(values= pal_T4[c(2,4)],labels = c("T4b", "T4d"), guide= guide_legend(title="dist[norm]")) +
   geom_vline(data=mu, aes(xintercept=grp.mean, color=gp), linetype="dashed") +
   scale_x_continuous(limits = c(0.4, 1.4), breaks = seq(0.4,1.4,by=0.2), labels = seq(0.4,1.4,by=0.2), expand = c(0, 0.05)) +
@@ -750,4 +818,86 @@ ggplot() +
 
 t.test(PDOD_T4b[,1], PDOD_T4d[,1])
 t.test(PDOD_T4b[,2], PDOD_T4d[,2])
+
+# cont. ED Fig.3B, 3x3 compartments --------------------------------------------------------
+
+com_xyz_eye_b <- lens_type[[2]][, c('comx','comy','comz')] %>% as.matrix()
+com_xyz_eye_d <- lens_type[[4]][, c('comx','comy','comz')] %>% as.matrix()
+
+fnnb <- 19
+# - T4b
+xyz <- com_xyz_eye_b
+xyz[,2] <- -xyz[,2]
+tp <- cart2sphZ(xyz)[,2:3] /pi*180
+tp[,2] <- if_else(tp[,2] > 180, tp[,2] -360, tp[,2])
+
+angdiv <- list()
+inddiv <- list()
+tdiv <- c(0, 75, 100, 160)
+pdiv <- c(-15, 35, 70, 150)
+for (j in 1:3) {
+  for (k in 1:3) {
+    ii <- cc_b >= fnnb &
+      tp[,1] > tdiv[j] & tp[,1] < tdiv[j+1] &
+      tp[,2] > pdiv[k] & tp[,2] < pdiv[k+1]
+    inddiv <- c(inddiv, list(which(ii)))
+    PD_hex <- PD_hex_b[ii, ]
+    ang <- atan2(PD_hex[,4] - PD_hex[,2], PD_hex[,3] - PD_hex[,1]) /pi*180
+    ang <- 90 - ang #wrt +v
+    angdiv <- c(angdiv, list(ang))
+  }
+}
+
+# -- avg vector
+v1 <- matrix(ncol = 2, nrow = 0)
+for (j in 1:length(inddiv)) {
+  vv <- data.frame(PD_hex_b[inddiv[[j]],])
+  colnames(vv) <- c('x0','y0','xd','yd')
+  vv %<>% as_tibble() %>%
+    mutate(ang = atan2(yd-y0, xd-x0)) %>%
+    as.data.frame()
+  v1 <- rbind(v1, c(cos(mean(vv$ang)), sin(mean(vv$ang))))
+}
+
+# -- 3x3 plot
+df0 <- as.data.frame(refhex_2)
+colnames(df0) <- c('x','y')
+
+windows(width = 9, height = 9)
+# pdf(paste("hex_ref_b", '_3x3.pdf', sep = ""), width = 9, height = 9)
+layout(matrix(seq(1,9),nrow = 3, ncol = 3, byrow = TRUE))
+for (k in 1:length(inddiv)) {
+  plot(rbind(PD_hex_b[inddiv[[k]],1:2], PD_hex_b[inddiv[[k]],3:4]),
+       ylim=c(-3.2,3.2), xlim=c(-3,3), mar=c(0.1,0.1,0.1,0.1),pch=16,col=pal_9[k],
+       xlab ="", ylab='', xaxt="n",yaxt="n", frame.plot = F, main = '', asp = 1)
+  points(df0, pch=1, cex=5.5)
+  for (j in 1:nrow(PD_hex_b)) {
+    if (j %in% inddiv[[k]]) {
+      segments(PD_hex_b[j,1], PD_hex_b[j,2], PD_hex_b[j,3], PD_hex_b[j,4], col=pal_9[k])
+    }
+  }
+  segments(0,0, v1[k,1]*3, v1[k,2]*3, col=pal_9[k], lwd=2)
+}
+# dev.off()
+
+# compare angles PLOT
+windows(width = 6, height = 6)
+# pdf(paste("hex_ref_b", '_3x3_vectors.pdf', sep = ""), width = 6, height = 6)
+plot(c(0,0), type="n",
+     ylim=c(-1,1), xlim=c(-1,1), mar=c(0.1,0.1,0.1,0.1),
+     xlab ="", ylab='', xaxt="n",yaxt="n", frame.plot = F, main = '', asp = 1)
+for (j in 1:9) {
+  segments(0,0, v1[j,1], v1[j,2], col=pal_9[j])
+}
+# dev.off()
+
+# -- hist
+dev.new()
+plot(c(0,0), type = 'n', xlim = c(40, 150), ylim = c(0,0.05))
+for (j in 1:length(angdiv)) {
+  hh <- hist(angdiv[[j]], breaks = seq(45, 145, by=10), plot = F)
+  lines(hh$mids, hh$density, lty=1, bty='n',col= pal_9[j], lwd=3)
+}
+
+# sapply(angdiv, function(x) wilcox.test(x, mu = 90)$p.value) < 0.05
 

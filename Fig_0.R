@@ -2,6 +2,8 @@
 
 # This script sets the stage (library/func/data/conventions/etc) for plotting.
 # It loads processed data. To re-process, see "proc_*"
+# proc order, uCT -> eyemap -> T4, ephys, 
+
 # "Fig_*" and "ED_fig_*" scripts carry out further analysis and produce figures.
 
 
@@ -39,6 +41,10 @@ while (dev.cur() > 1) { dev.off() }
 source("eyemap_func.R")
 
 # FAFB CATMAID server ------------------------------------------------------------------
+
+# neurons in this study can be found here
+# https://fafb.catmaid.virtualflybrain.org/?pid=1&zp=65720&yp=160350.0517811483&xp=487737.6942783438&tool=tracingtool&sid0=1&s0=3.1999999999999993&help=true&layout=h(XY,%20%7B%20type:%20%22neuron-search%22,%20id:%20%22neuron-search-1%22,%20options:%20%7B%22annotation-name%22:%20%22Published%22%7D%7D,%200.6)
+# under "Paper: Zhao et al 2023"
 
 vfbcatmaid("fafb") # https://catmaid.virtualflybrain.org/
 print(catmaid_login())
@@ -92,9 +98,6 @@ load('data/med_ixy.RData')
 load('data/hexnb_ind_dist.RData') 
 
 # load EM data ---------------------------------------------------------
-# neurons in this study can be found here
-# https://fafb.catmaid.virtualflybrain.org/?pid=1&zp=65720&yp=160350.0517811483&xp=487737.6942783438&tool=tracingtool&sid0=1&s0=3.1999999999999993&help=true&layout=h(XY,%20%7B%20type:%20%22neuron-search%22,%20id:%20%22neuron-search-1%22,%20options:%20%7B%22annotation-name%22:%20%22Published%22%7D%7D,%200.6)
-# under "Paper: Zhao et al 2023"
 
 # load EM neuron H2
 load('data/neu_H2.RData')

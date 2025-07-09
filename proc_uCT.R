@@ -181,11 +181,11 @@ for (f in 1:length(fn)) {
   # normalize
   ucl_rot_sm <- sweep(ucl_rot_sm,1,sqrt(rowSums(ucl_rot_sm^2)),'/') #normalize
   
-  # # SAVE
-  # save(lens, cone, ind_Up, ind_Down, ind_left_lens, ind_left_cone,
-  #      eye_pca, vn, vf, vleft, ucl_rot, L, i_match, ucl,
-  #      ucl_rot_sm,
-  #      file = paste("data/microCT/", fn[f], ".RData", sep='') )
+  # SAVE
+  save(lens, cone, ind_Up, ind_Down, ind_left_lens, ind_left_cone,
+       eye_pca, vn, vf, vleft, ucl_rot, L, i_match, ucl,
+       ucl_rot_sm,
+       file = paste("data/microCT/", fn[f], ".RData", sep='') )
 }
 
 # nb_ind and ioa, 20240701 ------------------------------------------------
@@ -256,7 +256,7 @@ for (j in 1:nrow(nucl)) {
     }
   }
 }
-# save(nucl, file = paste("data/microCT/", fn[f], "_normals.RData", sep='') )
+save(nucl, file = paste("data/microCT/", fn[f], "_normals.RData", sep='') )
 
 # curvature and sphericity ------------------------------------------------
 
@@ -380,9 +380,9 @@ for (f in 1:length(fn)) {
       ind_dia_right <- ind_dia
     }
   }
-  # # SAVE
-  # save(ind_roc_left, ind_roc_right, ind_xy_left, ind_xy_right,
-  #      file = paste0("data/microCT/", fn[f], "_roc.RData"))
-  # save(ind_dia_left, ind_dia_right, ind_nb_left, ind_nb_right,
-  #      file = paste0("data/microCT/", fn[f], "_dia.RData"))
+  # SAVE
+  save(ind_roc_left, ind_roc_right, ind_xy_left, ind_xy_right,
+       file = paste0("data/microCT/", fn[f], "_roc.RData"))
+  save(ind_dia_left, ind_dia_right, ind_nb_left, ind_nb_right,
+       file = paste0("data/microCT/", fn[f], "_dia.RData"))
 }#loop

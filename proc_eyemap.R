@@ -231,8 +231,8 @@ nbco <- rbind(c(+1, 0), # p-axis
               c(0, -1)
 )
 
-# # SAVE
-# save(nb_ind, ind_xy, nb_dist_med, nb_dist_ucl, nbco, file = "data/hexnb_ind_dist.RData")
+# SAVE
+save(nb_ind, ind_xy, nb_dist_med, nb_dist_ucl, nbco, file = "data/hexnb_ind_dist.RData")
 
 
 #  add aux points beyond the boundary for regression ----------------------
@@ -376,12 +376,23 @@ eyemap_aux <- rbind(eyemap, cbind(seq(nrow(eyemap)+1, nrow(eyemap)+nrow(pt_aux))
 
 # SAVE eyemap -------------------------------------------------------------
 
-# save(eyemap, med_xyz, delsgs_mod, ucl_rot_sm, lens_Mi1, lens_ixy,
-#      utp_lens_rot, utp_lens_rot_shift, utp_Mi1_rot, utp_Mi1_rot_chiasm, ind_Up_ucl, ind_Down_ucl,
-#      ucl_rot_aux, med_xyz_aux, eyemap_aux, Npt,
-#      file = "data/eyemap.RData")
+save(eyemap, med_xyz, delsgs_mod, ucl_rot_sm, lens_Mi1, lens_ixy,
+     utp_lens_rot, utp_lens_rot_shift, utp_Mi1_rot, utp_Mi1_rot_chiasm, ind_Up_ucl, ind_Down_ucl,
+     ucl_rot_aux, med_xyz_aux, eyemap_aux, Npt,
+     file = "data/eyemap.RData")
 
 # ME to LOP ------------------------------------------------------------------
+
+# NOT run, VFB has no these annotations
+# LL <- 2
+# anno_str <- paste("T4",letters[LL], " - complete", sep = "")
+# anno_T4 <- catmaid_query_by_annotation(anno_str)
+# neu_skid_comp <- anno_T4[,"skid"]
+# neu_T4_comp <-  read.neurons.catmaid(neu_skid_comp, .progress = 'text')
+# T4b <- neu_T4_comp
+# anno_T4b <- anno_T4
+# 
+# save(anno_T4b, T4b, file = "data/neu_T4b.RData")
 
 # eyemap
 load('data/eyemap.RData')
@@ -446,8 +457,8 @@ lop_pred_global <- lop_pred
 L2_med <- cbind(lop_pred, med_xyz) #pt in LOP, mapped by T4 from med col
 rownames(L2_med) <- rownames(med_xyz)
 
-# # SAVE
-# save(L2_med, T4b_com, file = "data/L2_med.RData") 
+# SAVE
+save(L2_med, T4b_com, file = "data/L2_med.RData")
 
 
 # TmY5a to LO --------------------------------------------------------------
@@ -488,6 +499,6 @@ for (k in 1:3) {
   }
 }
 
-# # SAVE
-# save(TmY5a, anno_TmY5a, file = "data/neu_TmY5a.RData")
-# save(lo_pred, tag_xyz, file = "data/me_lo.RData")
+# SAVE
+save(TmY5a, anno_TmY5a, file = "data/neu_TmY5a.RData")
+save(lo_pred, tag_xyz, file = "data/me_lo.RData")

@@ -178,6 +178,84 @@ dist_pl3D <- function(p, a, b){
   return(sqrt(sum(vc^2)) / sqrt(sum((b-a)^2)))
 }
 
+# -- (8) -- correct  CT1 kind -------------------------------------------------------------------------------------
+
+# correct kink, break into 3 segments
+
+kinkCT1 <- function(neu){
+  # p1 <- tar$d[tar$d$PointNo==15957800,]  # 120865 15957800     0 285640 305788 243000 -2 15957759
+  # p2 <- tar$d[tar$d$PointNo==17033465,] # 193597 17033465     0 287646 304732 244040 -2 17033464
+  # p3 <- tar$d[tar$d$PointNo==17081035,] # 195007 17081035     0 287767 304207 250320 -2 17081034
+  # p4 <- tar$d[tar$d$PointNo==17081048,] # 195081 17081048     0 283885 306765 251360 -2 17081047
+  
+  # load("C:/Users/zhaoa/Dropbox (HHMI)/sync_userA/Documents/ReiserGroup/R_common/p1p2p3p4_20200304.RData")
+  load("data/p1p2p3p4_20200304.RData")
+  
+  s1 <- xyzmatrix(p1)-xyzmatrix(p2) #note p1-p2 here
+  s2 <- xyzmatrix(p3)-xyzmatrix(p2)
+  s3 <- xyzmatrix(p4)-xyzmatrix(p3)
+  dz=40
+  k2x <- (s3[1]-s1[1]) / ((p3$Z-p2$Z)/dz)
+  k2y <- (s3[2]-s1[2]) / ((p3$Z-p2$Z)/dz)
+  k1x <- -s1[1]  / ((p2$Z-p1$Z)/dz)
+  k1y <- -s1[2]  / ((p2$Z-p1$Z)/dz)
+  k3x <- s3[1]  / ((p4$Z-p3$Z)/dz)
+  k3y <- s3[2]  / ((p4$Z-p3$Z)/dz)
+  
+  if (is.neuron(neu)) {
+    tar <- neu
+    
+    modd <- tar$d
+    modd2 <- tar$d
+    
+    for (zz in seq(p2$Z,p3$Z,dz)) {
+      ii <- modd[,5]==zz & modd[,3] < 320000
+      modd2[ii,3] <- modd[ii,3] + s1[1] + k2x*(zz-p2$Z)/dz
+      modd2[ii,4] <- modd[ii,4] + s1[2] + k2y*(zz-p2$Z)/dz
+    }
+    for (zz in seq(p1$Z,p2$Z-dz,dz)) {
+      ii <- modd[,5]==zz & modd[,3] < 320000
+      modd2[ii,3] <- modd[ii,3] - k1x*(zz-p1$Z)/dz
+      modd2[ii,4] <- modd[ii,4] - k1y*(zz-p1$Z)/dz
+    }
+    for (zz in seq(p3$Z+dz,p4$Z,dz)) {
+      ii <- modd[,5]==zz & modd[,3] < 320000
+      modd2[ii,3] <- modd[ii,3] + s3[1] - k3x*(zz-p3$Z)/dz
+      modd2[ii,4] <- modd[ii,4] + s3[2] - k3y*(zz-p3$Z)/dz
+    }
+    tar$d <- modd2
+    
+    return(tar)
+  } else if (is.neuronlist(neu)) {
+    tar_ls <- neu
+    for (j in 1:length(tar_ls)) {
+      tar <- tar_ls[[j]]
+      modd <- tar$d
+      modd2 <- tar$d
+      for (zz in seq(p2$Z,p3$Z,dz)) {
+        ii <- modd[,5]==zz & modd[,3] < 320000
+        modd2[ii,3] <- modd[ii,3] + s1[1] + k2x*(zz-p2$Z)/dz
+        modd2[ii,4] <- modd[ii,4] + s1[2] + k2y*(zz-p2$Z)/dz
+      }
+      for (zz in seq(p1$Z,p2$Z-dz,dz)) {
+        ii <- modd[,5]==zz & modd[,3] < 320000
+        modd2[ii,3] <- modd[ii,3] - k1x*(zz-p1$Z)/dz
+        modd2[ii,4] <- modd[ii,4] - k1y*(zz-p1$Z)/dz
+      }
+      for (zz in seq(p3$Z+dz,p4$Z,dz)) {
+        ii <- modd[,5]==zz & modd[,3] < 320000
+        modd2[ii,3] <- modd[ii,3] + s3[1] - k3x*(zz-p3$Z)/dz
+        modd2[ii,4] <- modd[ii,4] + s3[2] - k3y*(zz-p3$Z)/dz
+      }
+      tar$d <- modd2
+      tar_ls[[j]] <- tar
+    }
+    return(tar_ls)
+  } else {
+    print("invalid input")
+  }
+}
+
 # -- (9) -- return a quaternion rotation matrix -----------------------------------------------------------------------
 
 # cf. https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation#Quaternion-derived_rotation_matrix

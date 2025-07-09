@@ -197,6 +197,7 @@ rownames(vv_Mo) <- rownames(ucl_rot_sm)
 # H2 
 # combine arenaAng and headAnd
 uxy <- unique(tb[, c('stimPosX', 'stimPosY')])
+porder <- c(6, 1, 2, 5, 3, 4)
 
 df <- matrix(ncol = 8, nrow = 0)
 df_indi <- matrix(ncol = 8, nrow = 0)
@@ -230,9 +231,9 @@ for (j in 1:nrow(uxy)) {
       
       dxyz <- xyz
       
-      df_tmp2 <- cbind(pxyz, dxyz, j, k)
+      df_tmp2 <- cbind(pxyz, dxyz, porder[j], k)
       df_tmp <- c(colMeans(pxyz),
-                  colMeans(dxyz), j, k)
+                  colMeans(dxyz), porder[j], k)
     }
     df <- rbind(df, df_tmp)
     df_indi <- rbind(df_indi, df_tmp2)
@@ -312,21 +313,42 @@ plt
 # ggsave(paste("T4", letters[LL], "_RF_Mercator_PD.pdf",sep=''), width = 5, height = 6.5)
 
 
-# cont. Fig.4C, summary  -----------------------------------------------------------------
+# cont. Fig.4C, inset summary, with distr -----------------------------------
 
-kk <- c()
-ang <- matrix(ncol = 2, nrow = 6)
+# +h wrt to meridians
+nb_ang_ucl <- matrix(ncol = 2, nrow = nrow(eyemap))
+for (j in 1:nrow(nb_ind)) {
+  if (sum(complete.cases(nb_ind[j,])) == 7) {
+    # local meridian
+    pt <- ucl_rot_sm[nb_ind[j,1],,drop=F]
+    tp <- cart2sphZ(pt)[,2:3]
+    rtp <- matrix(c(1, tp + c(-5/180*pi, 0)), nrow = 1)
+    xyz <- sph2cartZ(rtp)
+    vmer <- xyz - pt
+    # +h
+    bf <- colMeans(ucl_rot_sm[nb_ind[j,4:5],]) - colMeans(ucl_rot_sm[nb_ind[j,c(2,7)],])
+    
+    ang <- acos(vmer %*% bf / sqrt(sum(vmer^2)) / sqrt(sum(bf^2)) ) /pi*180 
+    nb_ang_ucl[nb_ind[j,1],] <- c(j, ang)
+  }
+}
+
+# nb T4 ang
+t4pd <- matrix(ncol = 2, nrow = 0)
+hexshear <- matrix(ncol = 2, nrow = 0)
+dd <- c()
 for (j in seq(1,6)) {
   m <- sweep(as.matrix(df_arrow[,c('x','y')]), 2, as.matrix(df_H2[j,c('x','y')]))
-  k <- rowSums(m^2) %>% which.min() #closet T4
-  kk <- c(kk, k)
-  ang[j,] <- c(atan2(df_H2$yend[j] - df_H2$y[j], 
-                     df_H2$xend[j] - df_H2$x[j]),
-               atan2(df_arrow$yend[k] - df_arrow$y[k], 
-                     df_arrow$xend[k] - df_arrow$x[k])
+  k <- rowSums(m^2) %>% order() %>% head(1+6) #closet 1+6 T4
+  t4pd <- rbind(t4pd,
+                cbind(j,
+                      atan2(df_arrow$yend[k] - df_arrow$y[k],
+                            df_arrow$xend[k] - df_arrow$x[k])
+                )
   )
+  hexshear <- rbind(hexshear, cbind(j, nb_ang_ucl[k,2]))
+  dd <- c(dd, quantile(dist(df_arrow[k, c('x','y')]), 0.75) /pi*180)
 }
-ang <- ang[c(2,3,5,6,4,1), ]
 
 # individual angles
 pxyz <- df_indi[,c('x','y','z')] 
@@ -346,55 +368,85 @@ for (j in 1:nrow(ang_indi)) {
   )
 }
 
-# plot both angs
+# plot all angs
 df <- cbind(ang_indi, 1)
 df <- as.data.frame(df)
-colnames(df) <- c('ang','pos','type')
-df$x <- 0
-# reorder, c(2,3,5,6,4,1)
-df$x[df$pos == 1] <- 6
-df$x[df$pos == 2] <- 1
-df$x[df$pos == 3] <- 2
-df$x[df$pos == 4] <- 5
-df$x[df$pos == 5] <- 3
-df$x[df$pos == 6] <- 4
+colnames(df) <- c('ang','pos0','type')
+df$pos <- df$pos0
 
 df$ang <- df$ang /pi*180 + 180
 df$ang <- if_else(df$ang > 180, df$ang-360, df$ang)
 
-df3 <- df %>%
-  group_by(pos, x) %>%
+df_sum <- df %>%
+  group_by(pos0, pos) %>%
   summarise(mean = mean(ang),
             sd = sd(ang),
             n = n(),
             se = sd / sqrt(n)
-            ) %>%
+  ) %>%
   ungroup() %>%
   data.frame()
 
 # T4b
-df2 <- cbind(ang[,2], seq(1,6)-0.1, 2)
+df2 <- cbind(t4pd, 2)
 df2 <- as.data.frame(df2)
-colnames(df2) <- c('ang','pos','type')
+colnames(df2) <- c('pos0','ang','type')
+df2$pos <- df2$pos0 - 0.3
 df2$ang <- df2$ang /pi*180 + 180
 
+# shear
+df3 <- cbind(hexshear, 3)
+df3 <- as.data.frame(df3)
+colnames(df3) <- c('pos0','ang','type')
+df3$pos <- df3$pos0 + 0.3
+df3$ang <- df3$ang -90
+
 windows(width = 6, height = 3)
-# pdf(paste("H2_vs_T4b_se", '.pdf', sep = ''), width = 2, height = 2)
+# pdf(paste("H2_T4b_h_quartile_distr", '.pdf', sep = ''), width = 2, height = 2)
 ggplot( ) + 
-  geom_point(data=df3, aes(x=x, y=mean), colour='red', size = 1) +
-  geom_errorbar(data=df3, aes(x=x, ymin=mean-se, ymax=mean+se),colour='red', width=.2) +
-  geom_point(data=df2, aes(x=pos, y=ang), colour= pal_T4[2], size = 1) +
-  coord_cartesian(ylim = c(-5, 35)) +
-  scale_y_continuous(breaks= seq(0,40,by=10), labels = paste0(seq(0,40,by=10), "°")) +
+  geom_jitter(data=df, aes(x=pos, y=ang), colour='red', size = 1, height=0, width=0.04) +
+  stat_summary(data=df, aes(x=pos, y=ang),
+               # fun = 'mean',
+               # fun.min = function(z) { mean(z) - sqrt(var(z)/length(z)) },
+               # fun.max = function(z) { mean(z) + sqrt(var(z)/length(z)) },
+               fun = 'median',
+               fun.min = function(z) { quantile(z, 0.25) },
+               fun.max = function(z) { quantile(z, 0.75) },
+               geom = "errorbar", width = .1,
+               position = position_nudge(x = 0.15, y = 0),
+               colour = 'red', size = 1,  na.rm = T ) +
+  geom_jitter(data=df2, aes(x=pos, y=ang), colour=pal_T4[2], size = 1, height=0, width=0.04) +
+  stat_summary(data=df2, aes(x=pos, y=ang),
+               fun = 'median',
+               fun.min = function(z) { quantile(z, 0.25) },
+               fun.max = function(z) { quantile(z, 0.75) },
+               geom = "errorbar", width = .1,
+               position = position_nudge(x = 0.15, y = 0),
+               colour = pal_T4[2], size = 1,  na.rm = T ) +
+  geom_jitter(data=df3, aes(x=pos, y=ang), colour='black', size = 1, height=0, width=0.04) +
+  stat_summary(data=df3, aes(x=pos, y=ang),
+               fun = 'median',
+               fun.min = function(z) { quantile(z, 0.25) },
+               fun.max = function(z) { quantile(z, 0.75) },
+               geom = "errorbar", width = .1,
+               position = position_nudge(x = 0.15, y = 0),
+               colour = 'black', size = 1,  na.rm = T ) +
+  coord_cartesian(ylim = c(-25, 55)) +
+  scale_y_continuous(breaks= seq(-20,40,by=20), labels = paste0(seq(90-20,90+40,by=20), "°")) +
   scale_x_continuous(breaks= seq(0,6,by=1), labels = seq(0,6,by=1)) +
   theme_minimal() +
-  labs(title= paste("H2 vs T4b", sep = ''),
+  labs(title= paste("H2 vs T4b vs +h", sep = ''),
        x='position', y='') 
 # dev.off()
 
-# ttest
-j <- 3
-t.test(df$ang[df$x==j], mu=df2$ang[j])
+# # ttest
+j <- 1
+t.test(df$ang[df$pos0==j], df2$ang[df2$pos0==j])$p.value
+t.test(df$ang[df$pos0==j], df3$ang[df3$pos0==j])$p.value
+# # Mann-Whitney
+# j <- 2
+# wilcox.test(df$ang[df$pos0==j], df2$ang[df2$pos0==j], paired = F)
+# wilcox.test(df$ang[df$pos0==j], df3$ang[df3$pos0==j], paired = F)
 
 
 # Fig.4D, angles between eye v-axis and T4b, 2D heat map ------------------------------------------------
@@ -593,6 +645,8 @@ title(paste(c("D","C","V")[j],
             sep = '')
       )
 # dev.off()
+
+
 
 
 # ED Fig.6E, t,R prediction, T4b  -------------------------------------------------
@@ -838,8 +892,10 @@ dfm <- na.omit(dfm)
 
 windows(width = 6, height = 4)
 # png("comparison_T4b_PD.png", width = 1200, height = 900, pointsize=24)
+# png("comparison_T4b_PD.png", width = 800, height = 400, pointsize=24)
+# pdf("comparison_T4b_PD.pdf", width = 8, height = 4)
 ggplot(dfm, aes(factor(Var2), value) ) + 
-  geom_jitter(colour='black',size = 1,height = 0, width = 0.1) +
+  geom_jitter(colour='black',shape=20, size = 1,height = 0, width = 0.1) +
   stat_summary(fun.min = function(z) { quantile(z,0.25) },
                fun.max = function(z) { quantile(z,0.75) },
                geom = "errorbar", position = position_nudge(x = 0.3, y = 0),
@@ -987,8 +1043,9 @@ dfm <- na.omit(dfm)
 
 windows(width = 6, height = 4)
 # png("comparison_T4d_PD.png", width = 1200, height = 900, pointsize=24)
+# png("comparison_T4d_PD.png", width = 800, height = 400, pointsize=24)
 ggplot(dfm, aes(factor(Var2), value) ) + 
-  geom_jitter(colour='black',size = 1,height = 0, width = 0.1) +
+  geom_jitter(colour='black', shape=20,size = 1,height = 0, width = 0.1) +
   stat_summary(fun.min = function(z) { quantile(z,0.25) },
                fun.max = function(z) { quantile(z,0.75) },
                geom = "errorbar", position = position_nudge(x = 0.3, y = 0),
@@ -1009,7 +1066,7 @@ d <- ucl_rot_sm
 colnames(d) <- c("X","Y","Z")
 
 ## ## choose type
-LL <- 2
+LL <- 4
 v_data <- RF_lens_T4_pred[,(3*(LL-1)+1):(3*(LL-1)+3)]- ucl_rot_sm 
 v_data <- v_data - sweep(ucl_rot_sm, 1, rowSums(v_data * ucl_rot_sm), '*') #tangent
 ii <- ucl_rot_sm[,2] < -0.98
@@ -1017,38 +1074,42 @@ p <- v_data / mean(sqrt(rowSums(v_data[ii,]^2))) # normalize to
 vf_amp <- mean(sqrt(rowSums(v_data[ii,]^2)))
 
 
-## ## relevant to T4b
-pal_3 <- pal_TR[c(1,2,6)] 
-ls_car <- list(#t_gen(c(+1,0,0), d),
-               t_gen(c(-1,0,0), d),
-               # t_gen(c(0,+1,0), d),
-               t_gen(c(0,-1,0), d),
-               # t_gen(c(0,0,+1), d),
-               # t_gen(c(0,0,-1), d),
-               # R_gen(c(+1,0,0), d),
-               # R_gen(c(-1,0,0), d),
-               # R_gen(c(0,+1,0), d),
-               # R_gen(c(0,-1,0), d),
-               # R_gen(c(0,0,+1), d),
-               R_gen(c(0,0,-1), d) )
+# ## ## relevant to T4b
+# pal_3 <- pal_TR[c(1,2,6)] 
+# ls_car <- list(#t_gen(c(+1,0,0), d),
+#                t_gen(c(-1,0,0), d),
+#                # t_gen(c(0,+1,0), d),
+#                t_gen(c(0,-1,0), d),
+#                # t_gen(c(0,0,+1), d),
+#                # t_gen(c(0,0,-1), d),
+#                # R_gen(c(+1,0,0), d),
+#                # R_gen(c(-1,0,0), d),
+#                # R_gen(c(0,+1,0), d),
+#                # R_gen(c(0,-1,0), d),
+#                # R_gen(c(0,0,+1), d),
+#                R_gen(c(0,0,-1), d) )
+# star <- Mollweide(cart2sph2tp(matrix(pred_t_T4b,ncol=3))[, c('t','p')])
+# star2 <- Mollweide(cart2sph2tp(matrix(pred_R_T4b,ncol=3))[, c('t','p')])
 
 
-## ## relevant to T4d
-# pal_3 <- pal_TR[c(3,4,5)]
-# ls_car <- list(
-#   # t_gen(c(+1,0,0), d),
-#   # t_gen(c(-1,0,0), d),
-#   # t_gen(c(0,+1,0), d),
-#   # t_gen(c(0,-1,0), d),
-#   t_gen(c(0,0,+1), d),
-#   # t_gen(c(0,0,-1), d),
-#   # R_gen(c(+1,0,0), d),
-#   R_gen(c(-1,0,0), d),
-#   # R_gen(c(0,+1,0), d),
-#   R_gen(c(0,-1,0), d)
-#   # R_gen(c(0,0,+1), d),
-#   # R_gen(c(0,0,-1), d) 
-#   )
+# ## relevant to T4d
+pal_3 <- pal_TR[c(3,4,5)]
+ls_car <- list(
+  # t_gen(c(+1,0,0), d),
+  # t_gen(c(-1,0,0), d),
+  # t_gen(c(0,+1,0), d),
+  # t_gen(c(0,-1,0), d),
+  t_gen(c(0,0,+1), d),
+  # t_gen(c(0,0,-1), d),
+  # R_gen(c(+1,0,0), d),
+  R_gen(c(-1,0,0), d),
+  # R_gen(c(0,+1,0), d),
+  R_gen(c(0,-1,0), d)
+  # R_gen(c(0,0,+1), d),
+  # R_gen(c(0,0,-1), d)
+  )
+star <- Mollweide(cart2sph2tp(matrix(pred_t_T4d,ncol=3))[, c('t','p')])
+star2 <- Mollweide(cart2sph2tp(matrix(pred_R_T4d,ncol=3))[, c('t','p')])
 
 
 angdiff <- matrix(ncol = length(ls_car), nrow = nrow(d))
@@ -1057,8 +1118,6 @@ for (j in 1:length(ls_car)) {
 }
 
 # -- eyal plot
-star <- Mollweide(cart2sph2tp(matrix(pred_t_T4b,ncol=3))[, c('t','p')])
-star2 <- Mollweide(cart2sph2tp(matrix(pred_R_T4b,ncol=3))[, c('t','p')])
 # 
 # subsampling
 xy_sub <- seq(-20,20,by=3)

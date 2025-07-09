@@ -252,6 +252,80 @@ windows(width = 6.5, height = 6.5)
 plt
 # ggsave(paste("H2_all_grating_avg.pdf",sep=''), width = 9, height = 8)
 
+# ED Fig. 1D, plot all 7 cells, edge ---------------------------------------------------
+
+load('data/H2_tuning_2023.rda' )
+
+pos <- paste0(tb$stimPosX, tb$stimPosY) %>% as.integer()
+upos <- unique(pos)
+
+df <- matrix(ncol = 5, nrow = 0)
+for (j in 1:7) {
+  for (k in c(0,1)) {
+    
+    ii <- tb$cellNum == j & tb$edgeVal == k
+    
+    thetaphi <- tb_v[ii, 1:2] #base
+    
+    if (sum(is.na(thetaphi[,1])) < nrow(thetaphi)) {
+      thetaphi[, 1] <- 90 - thetaphi[, 1] # elev to theta
+      thetaphi[, 2] <- 360 - thetaphi[, 2] # left to right, need it cos cart2Merc invert y
+      thetaphi <- thetaphi / 180*pi
+      thetaphi <- cbind(1, thetaphi)
+      xyz <- matrix(ncol = 3, nrow = nrow(thetaphi))
+      xyz[!is.na(thetaphi[,3]), ] <- sph2cartZ(thetaphi[!is.na(thetaphi[,3]), ])
+      
+      pxyz <- xyz
+      
+      thetaphi <- tb_v[ii,3:4] #spk
+      
+      thetaphi[, 1] <- 90 - thetaphi[, 1]
+      thetaphi[, 2] <- 360 - thetaphi[, 2] # left to right, need it cos cart2Merc invert y
+      thetaphi <- thetaphi / 180*pi
+      thetaphi <- cbind(1, thetaphi)
+      xyz <- matrix(ncol = 3, nrow = nrow(thetaphi))
+      xyz[!is.na(thetaphi[,3]), ] <- sph2cartZ(thetaphi[!is.na(thetaphi[,3]), ])
+      
+      dxyz <- xyz
+      
+      df_tmp <- cbind(cart2Mercator(pxyz), cart2Mercator(dxyz), j, k, pos[ii])
+    }
+    df <- rbind(df, df_tmp[!is.na(df_tmp[,1]),])
+  }
+}
+colnames(df) <- c('x','y','xend','yend','cell', 'edge', 'Pos')
+
+# avg position
+df %<>% group_by(Pos) %>% 
+  mutate(x = mean(x), y = mean(y), xend = xend, yend = yend) %>%
+  ungroup() %>% 
+  arrange(Pos) %>% 
+  data.frame()
+
+
+## ### dark
+df_arrow <- as.data.frame(df[df$edge == 0,])
+# ### ### bright
+df_arrow <- as.data.frame(df[df$edge == 1,])
+# ### ### birght x1
+# df_arrow <- as.data.frame(df[df$edge == 1 & df$cell == 1,])
+
+df_arrow$cell <- as.factor(df_arrow$cell)
+
+# mercator
+plt <- plt_Mer +
+  geom_segment(data=df_arrow, aes(x = x,y = y, xend = xend,yend = yend, colour=cell),size =1)+
+  # geom_segment(data=df_arrow, aes(x = x,y = y, xend = xend,yend = yend, colour=cell),size =1, arrow = arrow(length = unit(0.01, "npc"), type = "closed")) +
+  scale_colour_manual(values = brewer.pal(7,"Set1"), breaks = c("1", "2", "3","4","5","6","7")) +
+  scale_x_continuous(limits = c(-45,90)/180*pi,breaks = seq(-45,90,by=45)/180*pi, labels = paste0(seq(-45,90,by=45),"°"),  expand = c(0, 0)) +
+  scale_y_continuous(limits = c(-15,75)/180*pi,breaks = log(tan(pi/4 + seq(-15,75,by=15)/180*pi/2)), labels = paste0(seq(-15,75,by=15),"°"),  expand = c(0, 0)) +
+  # annotate("text", x = df_arrow$x+0.02, y = df_arrow$y+0.02, label = 1:nrow(df_arrow), size = 3) +
+  labs(title = "edge - spk - bright")
+windows(width = 9, height = 8)
+plt
+# ggsave(paste("H2_Mercator_edge_percell_spk_bright.pdf",sep=''), width = 9, height = 8)
+# ggsave(paste("H2_Mercator_edge_percell_spk_dark.pdf",sep=''), width = 9, height = 8)
+
 
 # ED Fig.1E, dark vs. bright vs. grating at each location ---------------------
 
@@ -291,6 +365,21 @@ df_ang <- as.data.frame(df_ang) %>%
 
 df <- cbind(df_ang, tb[,1:5])
 df <- merge(df, uxy, by=c('edgeVal','stimPosX', 'stimPosY'))
+
+# -- wilcox test, avg bright/dark bars
+# df_test <- df3[df3$edgeVal < 2, ]
+df_test <- df
+test_wilc <- matrix(nrow = 0, ncol = 2)
+for (j in unique(df_test$stimTypePos)) {
+  data <- df_test[df_test$stimTypePos == j,]
+  test_wilc <- rbind(
+    test_wilc,
+    c(j,
+      wilcox.test(data[,'ang'])$p.value
+    )
+  )
+}
+test_wilc[c(3, 5, 4, 6, 2, 1),] # reorder by position
 
 # - add gratings, 2023
 load('data/H2_tuning_2023_grating.rda' )
@@ -352,7 +441,7 @@ ggplot(df3, aes(stimType, ang, colour= factor(edgeVal)) ) +
                size = 1, width = .2 ) +
   stat_summary(fun = median, geom = "point",  aes(colour = factor(edgeVal)), size = 1, position = position_nudge(x = 0.2, y = 0)) +
   scale_discrete_manual(values = c('#762A83','#1B7837','#000000'),aesthetics = "colour",guide= guide_legend(title="")) +
-  coord_cartesian(ylim = c(65, 150)) +
+  # coord_cartesian(ylim = c(65, 150)) +
   scale_y_continuous(breaks= seq(-75,50,by=25)+90, labels = paste0(seq(-75, 50,by=25)+90, "°")) +
   scale_x_discrete(drop = F,
                    labels=c('02913'='6D', '12913'='6B', '22913'='6G', 's1'='',
@@ -373,6 +462,8 @@ df4$stimTypePos <- factor(df4$stimTypePos)
 df4$edgeVal <- factor(df4$edgeVal)
 resp <- aov(ang ~ stimTypePos + edgeVal, data = df4)
 summary(resp)
+
+
 
 
 # ED Fig.1F, deformation,  ------------------------
@@ -502,3 +593,5 @@ plt
 p1 <- sweep(xyz[2:9,], 2, xyz[1,,drop=F], '-')^2 %>% rowSums() %>% mean() %>% sqrt()
 p4 <- sweep(xyz[3*9+2:9,], 2, xyz[3*9+1,,drop=F], '-')^2 %>% rowSums() %>% mean() %>% sqrt()
 abs(p1-p4)/p1
+
+

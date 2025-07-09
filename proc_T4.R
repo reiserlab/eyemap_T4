@@ -23,6 +23,23 @@ load('data/hexnb_ind_dist.RData')
 load("data/neu_T4_dend.RData")
 
 # # query from VFB
+# vfbcatmaid("fafb") # https://catmaid.virtualflybrain.org/
+# print(catmaid_login())
+# 
+# T4_dend <- list()
+# anno_T4_dend <- list()
+# for (LL in 1:4) {
+#   query <- paste("^T4",letters[LL], "_R.*", sep = "")
+#   anno_dend <- catmaid_query_by_name(query)
+#   anno_T4_dend[[LL]] <- anno_dend
+#   T4 <- lapply(anno_dend$name, function(x) read.neuron.catmaid(x, .progress = F))
+#   T4_dend[[LL]] <- kinkCT1(T4)
+# }
+# # SAVE
+# save(T4_dend, anno_T4_dend, file = "data/neu_T4_dend.RData")
+
+
+# # NOT run, VFB has no these annotations
 # T4_dend <- list()
 # anno_T4_dend <- list()
 # for (LL in 1:4) {
@@ -115,11 +132,13 @@ for (LL in 1:4) {
     seg_summ <- matrix(0, ncol = 3+3+1+1+1+1+1+1+1, nrow = length(subtree$SegList)) 
     for (ii_seg in 1:length(subtree$SegList)) {
       node_ii <- subtree$SegList[[ii_seg]]
-      seg_v <- subtree$d[tail(node_ii,1), c("X","Y","Z")] - subtree$d[node_ii[1], c("X","Y","Z")]
+      seg_v <- subtree$d[tail(node_ii,1), c("X","Y","Z")] - 
+        subtree$d[node_ii[1], c("X","Y","Z")]
       L <- igraph::distances(subtree_g, v = node_ii[1], to = tail(node_ii, 1) )
-      seg_summ[ii_seg,] <- unlist(c(subtree$d[node_ii[1], c("X","Y","Z")], seg_v,
-                                    subtree_so$segments[ii_seg], round(L,0), 0, 0, 0, 0,
-                                    igraph::distances(subtree_g, v= subtree$StartPoint, to= node_ii[1])) )
+      seg_summ[ii_seg,] <- unlist(
+        c(subtree$d[node_ii[1], c("X","Y","Z")], seg_v,
+          subtree_so$segments[ii_seg], round(L,0), 0, 0, 0, 0,
+          igraph::distances(subtree_g, v= subtree$StartPoint, to= node_ii[1])) )
     }
     seg_summ <- data.frame(seg_summ)
     colnames(seg_summ) <- c('x0','y0','z0','xd','yd','zd','so','L','ang','angV','angH','angSO4','pathL')
@@ -332,9 +351,9 @@ for (LL in 1:4) {
   seg_summ_pc_type[[LL]] <- seg_summ_pc_neu
 }
 
-# # SAVE
-# save(dir_type, lens_type, dir_pc_type, so_type, seg_summ_type, seg_summ_pc_type, ell_type,
-#      file = "data/T4_gallery.RData")
+# SAVE
+save(dir_type, lens_type, dir_pc_type, so_type, seg_summ_type, seg_summ_pc_type, ell_type,
+     file = "data/T4_gallery.RData")
 
 
 # npreg vector field on lens, T4b, use global np with fixed bw  ------------------------
@@ -417,7 +436,7 @@ RF_lens_T4_pred_sm <- cbind(RF_lens_T4b_pred_sm,
                          RF_lens_T4d_pred_sm,
                          ucl_rot_sm*2 - RF_lens_T4d_pred_sm )
 
-# # SAVE
-# save(RF_lens_T4_pred, RF_lens_T4_pred_sm, file = "data/T4_RF_pred.RData")
+# SAVE
+save(RF_lens_T4_pred, RF_lens_T4_pred_sm, file = "data/T4_RF_pred.RData")
 
 
